@@ -68,7 +68,7 @@ input, select{
 <div class="dashboard">
   <div class="card">
     총 수입<br>
-    <strong>₩ 0</strong>
+   <strong id="totalIncome">₩ 0</strong>
   </div>
 
   <div class="card">
@@ -83,7 +83,7 @@ input, select{
 
   <div class="card">
     남은 금액<br>
-    <strong>₩ 0</strong>
+ <strong id="remainingMoney">₩ 0</strong>
   </div>
 
   <div class="card">
@@ -99,6 +99,28 @@ input, select{
 
   <select id="payment">
     <option value="카드">카드</option>
+
+    <div class="card">
+
+<h3>수입 입력</h3>
+
+<input id="incomeAmount" placeholder="금액" /><br><br>
+
+<select id="incomePerson">
+<option>훈</option>
+<option>쭈</option>
+<option>채원</option>
+<option>나은</option>
+<option>기타</option>
+</select><br><br>
+
+<input id="incomeMemo" placeholder="메모" /><br><br>
+
+<button onclick="saveIncome()">수입 저장</button>
+
+</div>
+
+    
     <option value="현금">현금</option>
   </select><br><br>
 
@@ -226,6 +248,78 @@ alert("삭제 실패")
 loadExpenses()
 }
 
+}async function loadIncome(){
+
+const { data, error } = await supabaseClient
+.from("income")
+.select("*")
+
+if(error) return
+
+let total = 0
+
+data.forEach(item=>{
+total += Number(item.amount || 0)
+})
+
+document.getElementById("totalIncome").innerText =
+"₩ " + total.toLocaleString()
+
+updateRemaining()
+
+function updateRemaining(){
+
+const incomeText =
+document.getElementById("totalIncome").innerText.replace(/[₩,]/g,"")
+
+const expenseText =
+document.getElementById("totalExpense").innerText.replace(/[₩,]/g,"")
+
+const remain =
+Number(incomeText || 0) - Number(expenseText || 0)
+
+document.getElementById("remainingMoney").innerText =
+"₩ " + remain.toLocaleString()
+
+}
+
+async function saveIncome(){
+
+const amount = document.getElementById("incomeAmount").value
+const person = document.getElementById("incomePerson").value
+const memo = document.getElementById("incomeMemo").value
+
+if(!amount){
+alert("금액 입력")
+return
+}
+
+const { error } = await supabaseClient
+.from("income")
+.insert([
+{
+amount:Number(amount),
+person:person,
+memo:memo
+}
+])
+
+if(error){
+alert("저장 실패")
+}else{
+alert("저장 완료")
+
+document.getElementById("incomeAmount").value=""
+document.getElementById("incomeMemo").value=""
+
+loadIncome()
+  loadIncome()
+}
+
+}
+  
+
+    
 }
 </script>
 </body>
