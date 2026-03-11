@@ -89,7 +89,6 @@
       다음달 카드 결제<br>
       <strong>₩ 0</strong>
     </div>
-  </div>
 
 <div class="card">
   카드 지출<br>
@@ -100,6 +99,11 @@
   현금 지출<br>
   <strong id="cashExpense">₩ 0</strong>
 </div>
+
+    
+  </div>
+
+
   
   <div class="card">
     <h3>지출 입력</h3>
@@ -174,15 +178,16 @@
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
+          const today = new Date()
+const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+const firstDayString = firstDayOfMonth.toISOString().split("T")[0]
+    
     function updateRemaining() {
       const incomeText = document.getElementById("totalIncome").innerText.replace(/[₩,\s]/g, "")
       const expenseText = document.getElementById("totalExpense").innerText.replace(/[₩,\s]/g, "")
 
       const remain = Number(incomeText || 0) - Number(expenseText || 0)
 
-      const today = new Date()
-const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
-const firstDayString = firstDayOfMonth.toISOString().split("T")[0]
 
       document.getElementById("remainingMoney").innerText = "₩ " + remain.toLocaleString()
     }
@@ -245,7 +250,8 @@ if (item.payment_method === "현금") {
             </div>
 
          <div style="font-size:14px; color:#666; margin-top:6px;">
-  ${item.date || "-"} / ${item.person || "-"} / ${item.memo || ""}
+${item.date || "-"} / ${item.payment_method || "-"} / ${item.person || "-"} / ${item.memo || ""}
+
 </div>
           </div>
         `
@@ -354,7 +360,7 @@ document.getElementById("personSummary").innerHTML = personHtml
        
 
 <div style="font-size:14px; color:#666; margin-top:6px;">
-  ${item.date || "-"} / ${item.payment_method || "-"} / ${item.person || "-"} / ${item.memo || ""}
+${item.date || "-"} / ${item.payment_method || "-"} 
 </div>
         
       </div>
