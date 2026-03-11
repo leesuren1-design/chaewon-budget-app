@@ -152,18 +152,25 @@ async function loadExpenses() {
   let total = 0
   let html = ""
 
-  data.forEach(item => {
-    total += Number(item.amount || 0)
+ data.forEach(item => {
+  total += Number(item.amount || 0)
 
-    html += `
-      <div style="padding:10px 0; border-bottom:1px solid #eee;">
-        <div><strong>${Number(item.amount).toLocaleString()}원</strong></div>
-        <div style="font-size:14px; color:#666;">
-          ${item.payment_method || "-"} / ${item.person || "-"} / ${item.memo || ""}
-        </div>
+  html += `
+    <div style="padding:10px 0; border-bottom:1px solid #eee;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong>${Number(item.amount).toLocaleString()}원</strong>
+        <button onclick="deleteExpense(${item.id})" 
+          style="padding:6px 10px; font-size:12px; background:#ffe5e5;">
+          삭제
+        </button>
       </div>
-    `
-  })
+
+      <div style="font-size:14px; color:#666;">
+        ${item.payment_method || "-"} / ${item.person || "-"} / ${item.memo || ""}
+      </div>
+    </div>
+  `
+})
 
   document.getElementById("expenseList").innerHTML = html
   document.getElementById("totalExpense").innerText = "₩ " + total.toLocaleString()
@@ -202,6 +209,24 @@ async function saveExpense() {
 }
 
 loadExpenses()
+
+  async function deleteExpense(id){
+
+const ok = confirm("삭제할까요?")
+if(!ok) return
+
+const { error } = await supabaseClient
+  .from("expenses")
+  .delete()
+  .eq("id", id)
+
+if(error){
+alert("삭제 실패")
+}else{
+loadExpenses()
+}
+
+}
 </script>
 </body>
 </html>
