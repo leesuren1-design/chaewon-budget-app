@@ -179,6 +179,29 @@
     <button>레시피</button>
   </div>
 
+<div class="card">
+  <h3>자동이체 등록</h3>
+
+  <input id="autoName" placeholder="이름 (예: 카드값)" /><br><br>
+
+  <input id="autoAmount" placeholder="금액" /><br><br>
+
+  <input id="autoDay" type="number" placeholder="매달 몇일 (예:10)" /><br><br>
+
+  <select id="autoType">
+    <option value="카드">카드</option>
+    <option value="현금">현금</option>
+  </select><br><br>
+
+  <button onclick="saveAuto()">등록</button>
+</div>
+
+<div class="card">
+  <h3>자동이체 목록</h3>
+  <div id="autoList">불러오는 중...</div>
+</div>
+
+  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://kxdafjemyjwurpjlxmaf.supabase.co";
