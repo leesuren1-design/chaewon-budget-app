@@ -72,9 +72,14 @@ input, select{
   </div>
 
   <div class="card">
-    총 지출<br>
-    <strong>₩ 0</strong>
-  </div>
+  총 지출<br>
+  <strong id="totalExpense">₩ 0</strong>
+</div>
+
+  <div class="card">
+  <h3>저장된 지출 내역</h3>
+  <div id="expenseList">불러오는 중...</div>
+</div>
 
   <div class="card">
     남은 금액<br>
@@ -127,6 +132,43 @@ const SUPABASE_KEY = "sb_publishable_Ht7JYGv9e2Q7CEjnlc5oHw_nsLVZ_wq"
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
+async function loadExpenses() {
+  const { data, error } = await supabaseClient
+    .from("expenses")
+    .select("*")
+    .order("id", { ascending: false })
+
+  if (error) {
+    document.getElementById("expenseList").innerHTML = "불러오기 실패"
+    return
+  }
+
+  if (!data || data.length === 0) {
+    document.getElementById("expenseList").innerHTML = "저장된 내역이 없습니다."
+    document.getElementById("totalExpense").innerText = "₩ 0"
+    return
+  }
+
+  let total = 0
+  let html = ""
+
+  data.forEach(item => {
+    total += Number(item.amount || 0)
+
+    html += `
+      <div style="padding:10px 0; border-bottom:1px solid #eee;">
+        <div><strong>${Number(item.amount).toLocaleString()}원</strong></div>
+        <div style="font-size:14px; color:#666;">
+          ${item.payment_method || "-"} / ${item.person || "-"} / ${item.memo || ""}
+        </div>
+      </div>
+    `
+  })
+
+  document.getElementById("expenseList").innerHTML = html
+  document.getElementById("totalExpense").innerText = "₩ " + total.toLocaleString()
+}
+
 async function saveExpense() {
   const amount = document.getElementById("amount").value
   const payment = document.getElementById("payment").value
@@ -155,9 +197,11 @@ async function saveExpense() {
     alert("저장 완료")
     document.getElementById("amount").value = ""
     document.getElementById("memo").value = ""
+    loadExpenses()
   }
 }
-</script>
 
+loadExpenses()
+</script>
 </body>
 </html>
