@@ -1,326 +1,311 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>채원나은이네 가계부</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>채원나은이네 가계부</title>
 
-<style>
-body{
-  font-family:sans-serif;
-  background:#f6f2f4;
-  margin:0;
-  padding:20px;
-}
+  <style>
+    body{
+      font-family:sans-serif;
+      background:#f6f2f4;
+      margin:0;
+      padding:20px;
+    }
 
-h1{
-  text-align:center;
-}
+    h1{
+      text-align:center;
+    }
 
-.dashboard{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:15px;
-  margin-top:20px;
-}
+    .dashboard{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:15px;
+      margin-top:20px;
+    }
 
-.card{
-  background:white;
-  border-radius:12px;
-  padding:20px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
-  margin-bottom:20px;
-}
+    .card{
+      background:white;
+      border-radius:12px;
+      padding:20px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom:20px;
+    }
 
-.menu{
-  margin-top:30px;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:15px;
-}
+    .menu{
+      margin-top:30px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:15px;
+    }
 
-button{
-  padding:20px;
-  border:none;
-  border-radius:12px;
-  background:white;
-  font-size:16px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
-  cursor:pointer;
-}
+    button{
+      padding:14px 20px;
+      border:none;
+      border-radius:12px;
+      background:white;
+      font-size:16px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.1);
+      cursor:pointer;
+    }
 
-input, select{
-  width:100%;
-  padding:12px;
-  font-size:16px;
-  border:1px solid #ddd;
-  border-radius:10px;
-  box-sizing:border-box;
-}
-</style>
+    input, select{
+      width:100%;
+      padding:12px;
+      font-size:16px;
+      border:1px solid #ddd;
+      border-radius:10px;
+      box-sizing:border-box;
+    }
 
+    .small-delete-btn{
+      padding:6px 10px;
+      font-size:12px;
+      background:#ffe5e5;
+    }
+  </style>
 </head>
 
 <body>
+  <h1>채원나은이네 가계부</h1>
 
-<h1>채원나은이네 가계부</h1>
-
-<div class="dashboard">
-  <div class="card">
-    총 수입<br>
-   <strong id="totalIncome">₩ 0</strong>
-  </div>
-
-  <div class="card">
-  총 지출<br>
-  <strong id="totalExpense">₩ 0</strong>
-</div>
-
-  <div class="card">
-  <h3>저장된 지출 내역</h3>
-  <div id="expenseList">불러오는 중...</div>
-</div>
-
-  <div class="card">
-    남은 금액<br>
- <strong id="remainingMoney">₩ 0</strong>
-  </div>
-
-  <div class="card">
-    다음달 카드 결제<br>
-    <strong>₩ 0</strong>
-  </div>
-</div>
-
-<div class="card">
-  <h3>지출 입력</h3>
-
-  <input id="amount" placeholder="금액" /><br><br>
-
-  <select id="payment">
-    <option value="카드">카드</option>
+  <div class="dashboard">
+    <div class="card">
+      총 수입<br>
+      <strong id="totalIncome">₩ 0</strong>
+    </div>
 
     <div class="card">
-
-<h3>수입 입력</h3>
-
-<input id="incomeAmount" placeholder="금액" /><br><br>
-
-<select id="incomePerson">
-<option>훈</option>
-<option>쭈</option>
-<option>채원</option>
-<option>나은</option>
-<option>기타</option>
-</select><br><br>
-
-<input id="incomeMemo" placeholder="메모" /><br><br>
-
-<button onclick="saveIncome()">수입 저장</button>
-
-</div>
-
-    
-    <option value="현금">현금</option>
-  </select><br><br>
-
-  <select id="person">
-    <option value="훈">훈</option>
-    <option value="쭈">쭈</option>
-    <option value="채원">채원</option>
-    <option value="나은">나은</option>
-    <option value="기타">기타</option>
-  </select><br><br>
-
-  <input id="memo" placeholder="메모" /><br><br>
-
-  <button onclick="saveExpense()">저장</button>
-</div>
-
-<div class="menu">
-  <button>지출 입력</button>
-  <button>수입 입력</button>
-  <button>카드 관리</button>
-  <button>사람별 지출</button>
-  <button>자동이체 달력</button>
-  <button>레시피</button>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-const SUPABASE_URL = "https://kxdafjemyjwurpjlxmaf.supabase.co"
-const SUPABASE_KEY = "sb_publishable_Ht7JYGv9e2Q7CEjnlc5oHw_nsLVZ_wq"
-
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
-
-async function loadExpenses() {
-  const { data, error } = await supabaseClient
-    .from("expenses")
-    .select("*")
-    .order("id", { ascending: false })
-
-  if (error) {
-    document.getElementById("expenseList").innerHTML = "불러오기 실패"
-    return
-  }
-
-  if (!data || data.length === 0) {
-    document.getElementById("expenseList").innerHTML = "저장된 내역이 없습니다."
-    document.getElementById("totalExpense").innerText = "₩ 0"
-    return
-  }
-
-  let total = 0
-  let html = ""
-
- data.forEach(item => {
-  total += Number(item.amount || 0)
-
-  html += `
-    <div style="padding:10px 0; border-bottom:1px solid #eee;">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <strong>${Number(item.amount).toLocaleString()}원</strong>
-        <button onclick="deleteExpense(${item.id})" 
-          style="padding:6px 10px; font-size:12px; background:#ffe5e5;">
-          삭제
-        </button>
-      </div>
-
-      <div style="font-size:14px; color:#666;">
-        ${item.payment_method || "-"} / ${item.person || "-"} / ${item.memo || ""}
-      </div>
+      총 지출<br>
+      <strong id="totalExpense">₩ 0</strong>
     </div>
-  `
-})
 
-  document.getElementById("expenseList").innerHTML = html
-  document.getElementById("totalExpense").innerText = "₩ " + total.toLocaleString()
-}
+    <div class="card">
+      남은 금액<br>
+      <strong id="remainingMoney">₩ 0</strong>
+    </div>
 
-async function saveExpense() {
-  const amount = document.getElementById("amount").value
-  const payment = document.getElementById("payment").value
-  const person = document.getElementById("person").value
-  const memo = document.getElementById("memo").value
+    <div class="card">
+      다음달 카드 결제<br>
+      <strong>₩ 0</strong>
+    </div>
+  </div>
 
-  if (!amount) {
-    alert("금액을 입력하세요")
-    return
-  }
+  <div class="card">
+    <h3>지출 입력</h3>
 
-  const { error } = await supabaseClient
-    .from("expenses")
-    .insert([
-      {
-        amount: Number(amount),
-        payment_method: payment,
-        person: person,
-        memo: memo
+    <input id="amount" placeholder="금액" /><br><br>
+
+    <select id="payment">
+      <option value="카드">카드</option>
+      <option value="현금">현금</option>
+    </select><br><br>
+
+    <select id="person">
+      <option value="훈">훈</option>
+      <option value="쭈">쭈</option>
+      <option value="채원">채원</option>
+      <option value="나은">나은</option>
+      <option value="기타">기타</option>
+    </select><br><br>
+
+    <input id="memo" placeholder="메모" /><br><br>
+
+    <button onclick="saveExpense()">지출 저장</button>
+  </div>
+
+  <div class="card">
+    <h3>수입 입력</h3>
+
+    <input id="incomeAmount" placeholder="금액" /><br><br>
+
+    <select id="incomePerson">
+      <option value="훈">훈</option>
+      <option value="쭈">쭈</option>
+      <option value="채원">채원</option>
+      <option value="나은">나은</option>
+      <option value="기타">기타</option>
+    </select><br><br>
+
+    <input id="incomeMemo" placeholder="메모" /><br><br>
+
+    <button onclick="saveIncome()">수입 저장</button>
+  </div>
+
+  <div class="card">
+    <h3>저장된 지출 내역</h3>
+    <div id="expenseList">불러오는 중...</div>
+  </div>
+
+  <div class="menu">
+    <button>지출 입력</button>
+    <button>수입 입력</button>
+    <button>카드 관리</button>
+    <button>사람별 지출</button>
+    <button>자동이체 달력</button>
+    <button>레시피</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    const SUPABASE_URL = "https://kxdafjemyjwurpjlxmaf.supabase.co"
+    const SUPABASE_KEY = "sb_publishable_Ht7JYGv9e2Q7CEjnlc5oHw_nsLVZ_wq"
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+    function updateRemaining() {
+      const incomeText = document.getElementById("totalIncome").innerText.replace(/[₩,\s]/g, "")
+      const expenseText = document.getElementById("totalExpense").innerText.replace(/[₩,\s]/g, "")
+
+      const remain = Number(incomeText || 0) - Number(expenseText || 0)
+
+      document.getElementById("remainingMoney").innerText = "₩ " + remain.toLocaleString()
+    }
+
+    async function loadExpenses() {
+      const { data, error } = await supabaseClient
+        .from("expenses")
+        .select("*")
+        .order("id", { ascending: false })
+
+      if (error) {
+        document.getElementById("expenseList").innerHTML = "불러오기 실패"
+        return
       }
-    ])
 
-  if (error) {
-    alert("저장 실패: " + error.message)
-  } else {
-    alert("저장 완료")
-    document.getElementById("amount").value = ""
-    document.getElementById("memo").value = ""
+      if (!data || data.length === 0) {
+        document.getElementById("expenseList").innerHTML = "저장된 내역이 없습니다."
+        document.getElementById("totalExpense").innerText = "₩ 0"
+        updateRemaining()
+        return
+      }
+
+      let total = 0
+      let html = ""
+
+      data.forEach(item => {
+        total += Number(item.amount || 0)
+
+        html += `
+          <div style="padding:10px 0; border-bottom:1px solid #eee;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+              <strong>${Number(item.amount).toLocaleString()}원</strong>
+              <button class="small-delete-btn" onclick="deleteExpense(${item.id})">삭제</button>
+            </div>
+            <div style="font-size:14px; color:#666; margin-top:6px;">
+              ${item.payment_method || "-"} / ${item.person || "-"} / ${item.memo || ""}
+            </div>
+          </div>
+        `
+      })
+
+      document.getElementById("expenseList").innerHTML = html
+      document.getElementById("totalExpense").innerText = "₩ " + total.toLocaleString()
+      updateRemaining()
+    }
+
+    async function saveExpense() {
+      const amount = document.getElementById("amount").value
+      const payment = document.getElementById("payment").value
+      const person = document.getElementById("person").value
+      const memo = document.getElementById("memo").value
+
+      if (!amount) {
+        alert("금액을 입력하세요")
+        return
+      }
+
+      const { error } = await supabaseClient
+        .from("expenses")
+        .insert([
+          {
+            amount: Number(amount),
+            payment_method: payment,
+            person: person,
+            memo: memo
+          }
+        ])
+
+      if (error) {
+        alert("저장 실패: " + error.message)
+      } else {
+        alert("저장 완료")
+        document.getElementById("amount").value = ""
+        document.getElementById("memo").value = ""
+        loadExpenses()
+      }
+    }
+
+    async function deleteExpense(id) {
+      const ok = confirm("삭제할까요?")
+      if (!ok) return
+
+      const { error } = await supabaseClient
+        .from("expenses")
+        .delete()
+        .eq("id", id)
+
+      if (error) {
+        alert("삭제 실패: " + error.message)
+      } else {
+        loadExpenses()
+      }
+    }
+
+    async function loadIncome() {
+      const { data, error } = await supabaseClient
+        .from("income")
+        .select("*")
+        .order("id", { ascending: false })
+
+      if (error) {
+        alert("수입 불러오기 실패: " + error.message)
+        return
+      }
+
+      let total = 0
+
+      data.forEach(item => {
+        total += Number(item.amount || 0)
+      })
+
+      document.getElementById("totalIncome").innerText = "₩ " + total.toLocaleString()
+      updateRemaining()
+    }
+
+    async function saveIncome() {
+      const amount = document.getElementById("incomeAmount").value
+      const person = document.getElementById("incomePerson").value
+      const memo = document.getElementById("incomeMemo").value
+
+      if (!amount) {
+        alert("금액 입력")
+        return
+      }
+
+      const { error } = await supabaseClient
+        .from("income")
+        .insert([
+          {
+            amount: Number(amount),
+            person: person,
+            memo: memo
+          }
+        ])
+
+      if (error) {
+        alert("수입 저장 실패: " + error.message)
+      } else {
+        alert("수입 저장 완료")
+        document.getElementById("incomeAmount").value = ""
+        document.getElementById("incomeMemo").value = ""
+        loadIncome()
+      }
+    }
+
     loadExpenses()
-  }
-}
-
-loadExpenses()
-
-  async function deleteExpense(id){
-
-const ok = confirm("삭제할까요?")
-if(!ok) return
-
-const { error } = await supabaseClient
-  .from("expenses")
-  .delete()
-  .eq("id", id)
-
-if(error){
-alert("삭제 실패")
-}else{
-loadExpenses()
-}
-
-}async function loadIncome(){
-
-const { data, error } = await supabaseClient
-.from("income")
-.select("*")
-
-if(error) return
-
-let total = 0
-
-data.forEach(item=>{
-total += Number(item.amount || 0)
-})
-
-document.getElementById("totalIncome").innerText =
-"₩ " + total.toLocaleString()
-
-updateRemaining()
-
-function updateRemaining(){
-
-const incomeText =
-document.getElementById("totalIncome").innerText.replace(/[₩,]/g,"")
-
-const expenseText =
-document.getElementById("totalExpense").innerText.replace(/[₩,]/g,"")
-
-const remain =
-Number(incomeText || 0) - Number(expenseText || 0)
-
-document.getElementById("remainingMoney").innerText =
-"₩ " + remain.toLocaleString()
-
-}
-
-async function saveIncome(){
-
-const amount = document.getElementById("incomeAmount").value
-const person = document.getElementById("incomePerson").value
-const memo = document.getElementById("incomeMemo").value
-
-if(!amount){
-alert("금액 입력")
-return
-}
-
-const { error } = await supabaseClient
-.from("income")
-.insert([
-{
-amount:Number(amount),
-person:person,
-memo:memo
-}
-])
-
-if(error){
-alert("저장 실패")
-}else{
-alert("저장 완료")
-
-document.getElementById("incomeAmount").value=""
-document.getElementById("incomeMemo").value=""
-
-loadIncome()
-  loadIncome()
-}
-
-}
-  
-
-    
-}
-</script>
+    loadIncome()
+  </script>
 </body>
 </html>
