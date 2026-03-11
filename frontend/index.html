@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>채원나은이네 가계부</title>
+
+<style>
+
+body{
+font-family:sans-serif;
+background:#f6f2f4;
+margin:0;
+padding:20px;
+}
+
+h1{
+text-align:center;
+}
+
+.dashboard{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:15px;
+margin-top:20px;
+}
+
+.card{
+background:white;
+border-radius:12px;
+padding:20px;
+box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.menu{
+margin-top:30px;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:15px;
+}
+
+button{
+padding:20px;
+border:none;
+border-radius:12px;
+background:white;
+font-size:16px;
+box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>채원나은이네 가계부</h1>
+
+<div class="dashboard">
+
+<div class="card">
+총 수입<br>
+<strong>₩ 0</strong>
+</div>
+
+<div class="card">
+총 지출<br>
+<strong>₩ 0</strong>
+</div>
+
+<div class="card">
+남은 금액<br>
+<strong>₩ 0</strong>
+</div>
+
+<div class="card">
+다음달 카드 결제<br>
+<strong>₩ 0</strong>
+</div>
+
+</div>
+
+<div class="menu">
+
+<button>지출 입력</button>
+<button>수입 입력</button>
+<button>카드 관리</button>
+<button>사람별 지출</button>
+<button>자동이체 달력</button>
+<button>레시피</button>
+
+</div>
+
+</body>
+</html>
