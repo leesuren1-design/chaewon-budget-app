@@ -180,14 +180,19 @@
 
       const remain = Number(incomeText || 0) - Number(expenseText || 0)
 
+      const today = new Date()
+const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+const firstDayString = firstDayOfMonth.toISOString().split("T")[0]
+
       document.getElementById("remainingMoney").innerText = "₩ " + remain.toLocaleString()
     }
 
     async function loadExpenses() {
-      const { data, error } = await supabaseClient
-        .from("expenses")
-        .select("*")
-        .order("id", { ascending: false })
+     const { data, error } = await supabaseClient
+  .from("expenses")
+  .select("*")
+  .gte("date", firstDayString)
+  .order("id", { ascending: false })
 
       if (error) {
         document.getElementById("expenseList").innerHTML = "불러오기 실패"
@@ -238,9 +243,10 @@ if (item.payment_method === "현금") {
               <strong>${Number(item.amount).toLocaleString()}원</strong>
               <button class="small-delete-btn" onclick="deleteExpense(${item.id})">삭제</button>
             </div>
-            <div style="font-size:14px; color:#666; margin-top:6px;">
-              ${item.payment_method || "-"} / ${item.person || "-"} / ${item.memo || ""}
-            </div>
+
+         <div style="font-size:14px; color:#666; margin-top:6px;">
+  ${item.date || "-"} / ${item.person || "-"} / ${item.memo || ""}
+</div>
           </div>
         `
       })
@@ -275,16 +281,17 @@ document.getElementById("personSummary").innerHTML = personHtml
         return
       }
 
-      const { error } = await supabaseClient
-        .from("expenses")
-        .insert([
-          {
-            amount: Number(amount),
-            payment_method: payment,
-            person: person,
-            memo: memo
-          }
-        ])
+    const { error } = await supabaseClient
+  .from("expenses")
+  .insert([
+    {
+      date: new Date().toISOString().split("T")[0],
+      amount: Number(amount),
+      payment_method: payment,
+      person: person,
+      memo: memo
+    }
+  ])
 
       if (error) {
         alert("저장 실패: " + error.message)
@@ -313,10 +320,11 @@ document.getElementById("personSummary").innerHTML = personHtml
     }
 
    async function loadIncome() {
-  const { data, error } = await supabaseClient
-    .from("income")
-    .select("*")
-    .order("id", { ascending: false })
+ const { data, error } = await supabaseClient
+  .from("income")
+  .select("*")
+  .gte("date", firstDayString)
+  .order("id", { ascending: false })
 
   if (error) {
     document.getElementById("incomeList").innerHTML = "수입 불러오기 실패"
@@ -343,9 +351,12 @@ document.getElementById("personSummary").innerHTML = personHtml
           <strong>${Number(item.amount).toLocaleString()}원</strong>
           <button class="small-delete-btn" onclick="deleteIncome(${item.id})">삭제</button>
         </div>
-        <div style="font-size:14px; color:#666; margin-top:6px;">
-          ${item.person || "-"} / ${item.memo || ""}
-        </div>
+       
+
+<div style="font-size:14px; color:#666; margin-top:6px;">
+  ${item.date || "-"} / ${item.payment_method || "-"} / ${item.person || "-"} / ${item.memo || ""}
+</div>
+        
       </div>
     `
   })
@@ -365,15 +376,16 @@ async function saveIncome() {
     return
   }
 
-  const { error } = await supabaseClient
-    .from("income")
-    .insert([
-      {
-        amount: Number(amount),
-        person: person,
-        memo: memo
-      }
-    ])
+const { error } = await supabaseClient
+  .from("income")
+  .insert([
+    {
+      date: new Date().toISOString().split("T")[0],
+      amount: Number(amount),
+      person: person,
+      memo: memo
+    }
+  ])
 
   if (error) {
     alert("수입 저장 실패: " + error.message)
