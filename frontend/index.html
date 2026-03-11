@@ -137,6 +137,11 @@
     <div id="expenseList">불러오는 중...</div>
   </div>
 
+<div class="card">
+  <h3>저장된 수입 내역</h3>
+  <div id="incomeList">불러오는 중...</div>
+</div>
+  
   <div class="menu">
     <button>지출 입력</button>
     <button>수입 입력</button>
@@ -253,57 +258,182 @@
       }
     }
 
-    async function loadIncome() {
-      const { data, error } = await supabaseClient
-        .from("income")
-        .select("*")
-        .order("id", { ascending: false })
+   async function loadIncome() {
+  const { data, error } = await supabaseClient
+    .from("income")
+    .select("*")
+    .order("id", { ascending: false })
 
-      if (error) {
-        alert("수입 불러오기 실패: " + error.message)
-        return
+  if (error) {
+    document.getElementById("incomeList").innerHTML = "수입 불러오기 실패"
+    return
+  }
+
+  if (!data || data.length === 0) {
+    document.getElementById("incomeList").innerHTML = "저장된 수입이 없습니다."
+    document.getElementById("totalIncome").innerText = "₩ 0"
+    updateRemaining()
+    return
+  }
+
+  let total = 0
+  let html = ""
+
+  data.forEach(item => {
+    total += Number(item.amount || 0)
+
+    html += `
+      <div style="padding:10px 0; border-bottom:1px solid #eee;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+          <strong>${Number(item.amount).toLocaleString()}원</strong>
+          <button class="small-delete-btn" onclick="deleteIncome(${item.id})">삭제</button>
+        </div>
+        <div style="font-size:14px; color:#666; margin-top:6px;">
+          ${item.person || "-"} / ${item.memo || ""}
+        </div>
+      </div>
+    `
+  })
+
+  document.getElementById("incomeList").innerHTML = html
+  document.getElementById("totalIncome").innerText = "₩ " + total.toLocaleString()
+  updateRemaining()
+}
+
+async function saveIncome() {
+  const amount = document.getElementById("incomeAmount").value
+  const person = document.getElementById("incomePerson").value
+  const memo = document.getElementById("incomeMemo").value
+
+  if (!amount) {
+    alert("금액 입력")
+    return
+  }
+
+  const { error } = await supabaseClient
+    .from("income")
+    .insert([
+      {
+        amount: Number(amount),
+        person: person,
+        memo: memo
       }
+    ])
 
-      let total = 0
+  if (error) {
+    alert("수입 저장 실패: " + error.message)
+  } else {
+    alert("수입 저장 완료")
+    document.getElementById("incomeAmount").value = ""
+    document.getElementById("incomeMemo").value = ""
+    loadIncome()
+  }
+}
 
-      data.forEach(item => {
-        total += Number(item.amount || 0)
-      })
+async function deleteIncome(id) {
+  const ok = confirm("수입 내역을 삭제할까요?")
+  if (!ok) return
 
-      document.getElementById("totalIncome").innerText = "₩ " + total.toLocaleString()
-      updateRemaining()
-    }
+  const { error } = await supabaseClient
+    .from("income")
+    .delete()
+    .eq("id", id)
 
-    async function saveIncome() {
-      const amount = document.getElementById("incomeAmount").value
-      const person = document.getElementById("incomePerson").value
-      const memo = document.getElementById("incomeMemo").value
+  if (error) {
+    alert("수입 삭제 실패: " + error.message)
+  } else {
+    loadIncome()
+  }
+}
 
-      if (!amount) {
-        alert("금액 입력")
-        return
+async function loadIncome() {
+  const { data, error } = await supabaseClient
+    .from("income")
+    .select("*")
+    .order("id", { ascending: false })
+
+  if (error) {
+    document.getElementById("incomeList").innerHTML = "수입 불러오기 실패"
+    return
+  }
+
+  if (!data || data.length === 0) {
+    document.getElementById("incomeList").innerHTML = "저장된 수입이 없습니다."
+    document.getElementById("totalIncome").innerText = "₩ 0"
+    updateRemaining()
+    return
+  }
+
+  let total = 0
+  let html = ""
+
+  data.forEach(item => {
+    total += Number(item.amount || 0)
+
+    html += `
+      <div style="padding:10px 0; border-bottom:1px solid #eee;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+          <strong>${Number(item.amount).toLocaleString()}원</strong>
+          <button class="small-delete-btn" onclick="deleteIncome(${item.id})">삭제</button>
+        </div>
+        <div style="font-size:14px; color:#666; margin-top:6px;">
+          ${item.person || "-"} / ${item.memo || ""}
+        </div>
+      </div>
+    `
+  })
+
+  document.getElementById("incomeList").innerHTML = html
+  document.getElementById("totalIncome").innerText = "₩ " + total.toLocaleString()
+  updateRemaining()
+}
+
+async function saveIncome() {
+  const amount = document.getElementById("incomeAmount").value
+  const person = document.getElementById("incomePerson").value
+  const memo = document.getElementById("incomeMemo").value
+
+  if (!amount) {
+    alert("금액 입력")
+    return
+  }
+
+  const { error } = await supabaseClient
+    .from("income")
+    .insert([
+      {
+        amount: Number(amount),
+        person: person,
+        memo: memo
       }
+    ])
 
-   const { error } = await supabaseClient
-  .from("income")
-  .insert([
-    {
-      amount: Number(amount),
-      person: person,
-      memo: memo
-    }
-  ])
+  if (error) {
+    alert("수입 저장 실패: " + error.message)
+  } else {
+    alert("수입 저장 완료")
+    document.getElementById("incomeAmount").value = ""
+    document.getElementById("incomeMemo").value = ""
+    loadIncome()
+  }
+}
 
-      if (error) {
-        alert("수입 저장 실패: " + error.message)
-      } else {
-        alert("수입 저장 완료")
-        document.getElementById("incomeAmount").value = ""
-        document.getElementById("incomeMemo").value = ""
-        loadIncome()
-      }
-    }
+async function deleteIncome(id) {
+  const ok = confirm("수입 내역을 삭제할까요?")
+  if (!ok) return
 
+  const { error } = await supabaseClient
+    .from("income")
+    .delete()
+    .eq("id", id)
+
+  if (error) {
+    alert("수입 삭제 실패: " + error.message)
+  } else {
+    loadIncome()
+  }
+}
+    
     loadExpenses()
     loadIncome()
   </script>
