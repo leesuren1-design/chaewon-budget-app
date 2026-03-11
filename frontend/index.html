@@ -13,7 +13,7 @@
       padding: 20px;
     }
 
-    h1, h3 {
+    h1, h2, h3 {
       margin-top: 0;
     }
 
@@ -37,19 +37,12 @@
       margin-bottom: 20px;
     }
 
-    .menu {
-      margin-top: 30px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-    }
-
     button {
-      padding: 14px 20px;
+      padding: 12px 16px;
       border: none;
       border-radius: 12px;
       background: white;
-      font-size: 16px;
+      font-size: 15px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       cursor: pointer;
     }
@@ -58,11 +51,14 @@
       background: #ffe6ee;
     }
 
-    .small-delete-btn {
+    .small-btn {
       padding: 6px 10px;
       font-size: 12px;
-      background: #ffe5e5;
       box-shadow: none;
+    }
+
+    .danger-btn {
+      background: #ffe5e5;
     }
 
     input, select {
@@ -72,6 +68,16 @@
       border: 1px solid #ddd;
       border-radius: 10px;
       box-sizing: border-box;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .row > * {
+      flex: 1;
     }
 
     .line {
@@ -89,20 +95,47 @@
     .summary-strong {
       font-size: 20px;
     }
+
+    .inline-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .muted {
+      color: #777;
+      font-size: 14px;
+    }
+
+    .section-title {
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
   <h1>채원나은이네 가계부</h1>
 
+  <div class="card">
+    <h3>월 선택</h3>
+    <div class="row">
+      <input id="monthPicker" type="month" />
+      <button class="primary-btn" onclick="applySelectedMonth()">불러오기</button>
+    </div>
+    <div class="sub" id="selectedMonthLabel">선택한 달 기준으로 합계를 봅니다.</div>
+  </div>
+
   <div class="dashboard">
     <div class="card">
       총 수입<br />
       <strong id="totalIncome" class="summary-strong">₩ 0</strong>
+      <div class="sub" id="incomeBreakdown">훈 ₩0 / 쭈 ₩0 / 기타 ₩0</div>
     </div>
 
     <div class="card">
       총 지출<br />
       <strong id="totalExpense" class="summary-strong">₩ 0</strong>
+      <div class="sub" id="expenseBreakdown">훈카드 ₩0 / 훈현금 ₩0 / 쭈카드 ₩0 / 쭈현금 ₩0</div>
     </div>
 
     <div class="card">
@@ -111,18 +144,20 @@
     </div>
 
     <div class="card">
-      다음달 카드 결제<br />
+      다음달 카드 결제 예상<br />
       <strong id="nextCardExpense" class="summary-strong">₩ 0</strong>
     </div>
 
     <div class="card">
       카드 지출<br />
       <strong id="cardExpense" class="summary-strong">₩ 0</strong>
+      <div class="sub" id="cardBreakdown">카드별 내역 없음</div>
     </div>
 
     <div class="card">
-      현금 지출<br />
+      현금/계좌이체 지출<br />
       <strong id="cashExpense" class="summary-strong">₩ 0</strong>
+      <div class="sub" id="cashBreakdown">현금/계좌이체 내역 없음</div>
     </div>
   </div>
 
@@ -135,6 +170,7 @@
     <select id="payment">
       <option value="카드">카드</option>
       <option value="현금">현금</option>
+      <option value="계좌이체">계좌이체</option>
     </select><br /><br />
 
     <select id="person">
@@ -159,8 +195,6 @@
     <select id="incomePerson">
       <option value="훈">훈</option>
       <option value="쭈">쭈</option>
-      <option value="채원">채원</option>
-      <option value="나은">나은</option>
       <option value="기타">기타</option>
     </select><br /><br />
 
@@ -170,24 +204,47 @@
   </div>
 
   <div class="card">
-    <h3>자동이체 등록</h3>
+    <h3>고정지출 관리</h3>
 
-    <input id="autoName" placeholder="이름 (예: 카드값)" /><br /><br />
-    <input id="autoAmount" placeholder="금액" /><br /><br />
-    <input id="autoDay" type="number" placeholder="매달 몇일 (예: 10)" /><br /><br />
+    <input type="hidden" id="fixedId" />
 
-    <select id="autoType">
+    <input id="fixedName" placeholder="이름 (예: 관리비)" /><br /><br />
+    <input id="fixedAmount" placeholder="금액" /><br /><br />
+    <input id="fixedDay" type="number" placeholder="매달 몇일 (예: 5)" /><br /><br />
+
+    <select id="fixedPayment">
       <option value="카드">카드</option>
       <option value="현금">현금</option>
       <option value="계좌이체">계좌이체</option>
     </select><br /><br />
 
-    <button class="primary-btn" onclick="saveAuto()">등록</button>
+    <select id="fixedPerson">
+      <option value="훈">훈</option>
+      <option value="쭈">쭈</option>
+      <option value="채원">채원</option>
+      <option value="나은">나은</option>
+      <option value="기타">기타</option>
+    </select><br /><br />
+
+    <input id="fixedMemo" placeholder="메모" /><br /><br />
+
+    <label class="muted">
+      <input id="fixedActive" type="checkbox" checked />
+      사용중
+    </label>
+
+    <br /><br />
+
+    <div class="row">
+      <button class="primary-btn" onclick="saveOrUpdateFixedExpense()">고정지출 저장/수정</button>
+      <button onclick="resetFixedForm()">입력 초기화</button>
+      <button onclick="importFixedExpenses()" class="primary-btn">선택한 달로 불러오기</button>
+    </div>
   </div>
 
   <div class="card">
-    <h3>자동이체 목록</h3>
-    <div id="autoList">불러오는 중...</div>
+    <h3>고정지출 목록</h3>
+    <div id="fixedList">불러오는 중...</div>
   </div>
 
   <div class="card">
@@ -205,15 +262,6 @@
     <div id="personSummary">불러오는 중...</div>
   </div>
 
-  <div class="menu">
-    <button>지출 입력</button>
-    <button>수입 입력</button>
-    <button>카드 관리</button>
-    <button>사람별 지출</button>
-    <button>자동이체 달력</button>
-    <button>레시피</button>
-  </div>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://kxdafjemyjwurpjlxmaf.supabase.co";
@@ -221,9 +269,41 @@
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const today = new Date();
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const firstDayString = firstDayOfMonth.toISOString().split("T")[0];
+    function getTodayString() {
+      return new Date().toISOString().split("T")[0];
+    }
+
+    function getCurrentMonthString() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      return `${y}-${m}`;
+    }
+
+    function getSelectedMonthRange() {
+      const monthValue = document.getElementById("monthPicker").value || getCurrentMonthString();
+      const [year, month] = monthValue.split("-").map(Number);
+
+      const start = new Date(year, month - 1, 1);
+      const end = new Date(year, month, 1);
+
+      const startString = start.toISOString().split("T")[0];
+      const endString = end.toISOString().split("T")[0];
+
+      return { monthValue, year, month, startString, endString };
+    }
+
+    function setDefaultDates() {
+      const todayString = getTodayString();
+      document.getElementById("expenseDate").value = todayString;
+      document.getElementById("incomeDate").value = todayString;
+      document.getElementById("monthPicker").value = getCurrentMonthString();
+    }
+
+    function updateSelectedMonthLabel() {
+      const { monthValue } = getSelectedMonthRange();
+      document.getElementById("selectedMonthLabel").innerText = `${monthValue} 기준으로 합계를 보고 있습니다.`;
+    }
 
     function updateRemaining() {
       const incomeText = document.getElementById("totalIncome").innerText.replace(/[₩,\s]/g, "");
@@ -232,24 +312,14 @@
       document.getElementById("remainingMoney").innerText = "₩ " + remain.toLocaleString();
     }
 
-    function setTodayDefaultValues() {
-      const todayString = new Date().toISOString().split("T")[0];
-      const expenseDateInput = document.getElementById("expenseDate");
-      const incomeDateInput = document.getElementById("incomeDate");
-
-      if (expenseDateInput && !expenseDateInput.value) {
-        expenseDateInput.value = todayString;
-      }
-      if (incomeDateInput && !incomeDateInput.value) {
-        incomeDateInput.value = todayString;
-      }
-    }
-
     async function loadExpenses() {
+      const { startString, endString } = getSelectedMonthRange();
+
       const { data, error } = await supabaseClient
         .from("expenses")
         .select("*")
-        .gte("date", firstDayString)
+        .gte("date", startString)
+        .lt("date", endString)
         .order("date", { ascending: false })
         .order("id", { ascending: false });
 
@@ -265,6 +335,9 @@
         document.getElementById("cashExpense").innerText = "₩ 0";
         document.getElementById("nextCardExpense").innerText = "₩ 0";
         document.getElementById("personSummary").innerHTML = "저장된 내역이 없습니다.";
+        document.getElementById("expenseBreakdown").innerText = "훈카드 ₩0 / 훈현금 ₩0 / 쭈카드 ₩0 / 쭈현금 ₩0";
+        document.getElementById("cardBreakdown").innerText = "카드별 내역 없음";
+        document.getElementById("cashBreakdown").innerText = "현금/계좌이체 내역 없음";
         updateRemaining();
         return;
       }
@@ -273,44 +346,94 @@
       let cardTotal = 0;
       let cashTotal = 0;
       let nextCardTotal = 0;
+
       const personTotals = { "훈": 0, "쭈": 0, "채원": 0, "나은": 0, "기타": 0 };
+      const payerBreakdown = {
+        "훈카드": 0,
+        "훈현금": 0,
+        "쭈카드": 0,
+        "쭈현금": 0
+      };
+      const cardMap = {};
+      const cashMap = {};
       let html = "";
 
       data.forEach((item) => {
         const amt = Number(item.amount || 0);
         total += amt;
 
-        if (item.payment_method === "카드") {
-          cardTotal += amt;
-          nextCardTotal += amt;
+        const person = item.person || "기타";
+        const payment = item.payment_method || "현금";
+        const memo = item.memo || "";
+
+        if (personTotals[person] !== undefined) {
+          personTotals[person] += amt;
         }
 
-        if (item.payment_method === "현금") {
+        if (payment === "카드") {
+          cardTotal += amt;
+          nextCardTotal += amt;
+        } else {
           cashTotal += amt;
         }
 
-        if (personTotals[item.person] !== undefined) {
-          personTotals[item.person] += amt;
+        const lowerMemo = memo.toLowerCase();
+
+        if (payment === "카드") {
+          if (person === "훈") payerBreakdown["훈카드"] += amt;
+          if (person === "쭈") payerBreakdown["쭈카드"] += amt;
+
+          let cardName = "기타카드";
+          if (lowerMemo.includes("kb")) cardName = "KB카드";
+          else if (lowerMemo.includes("롯데")) cardName = "롯데카드";
+          else if (lowerMemo.includes("우리")) cardName = "우리카드";
+          else if (lowerMemo.includes("삼성")) cardName = "삼성카드";
+          else if (lowerMemo.includes("농협1")) cardName = "농협1";
+          else if (lowerMemo.includes("농협2")) cardName = "농협2";
+
+          const cardKey = `${person} ${cardName}`;
+          cardMap[cardKey] = (cardMap[cardKey] || 0) + amt;
+        } else {
+          if (person === "훈") payerBreakdown["훈현금"] += amt;
+          if (person === "쭈") payerBreakdown["쭈현금"] += amt;
+
+          const cashKey = `${person} ${payment}`;
+          cashMap[cashKey] = (cashMap[cashKey] || 0) + amt;
         }
 
         html += `
           <div class="line">
             <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
               <strong>${amt.toLocaleString()}원</strong>
-              <button class="small-delete-btn" onclick="deleteExpense(${item.id})">삭제</button>
+              <button class="small-btn danger-btn" onclick="deleteExpense(${item.id})">삭제</button>
             </div>
             <div class="sub">
-              ${item.date || "-"} / ${item.payment_method || "-"} / ${item.person || "-"} / ${item.memo || ""}
+              ${item.date || "-"} / ${payment} / ${person} / ${memo}
             </div>
           </div>
         `;
       });
+
+      const cardBreakdownText = Object.keys(cardMap).length
+        ? Object.entries(cardMap).map(([k, v]) => `${k} ₩${v.toLocaleString()}`).join("<br>")
+        : "카드별 내역 없음";
+
+      const cashBreakdownText = Object.keys(cashMap).length
+        ? Object.entries(cashMap).map(([k, v]) => `${k} ₩${v.toLocaleString()}`).join("<br>")
+        : "현금/계좌이체 내역 없음";
 
       document.getElementById("expenseList").innerHTML = html;
       document.getElementById("totalExpense").innerText = "₩ " + total.toLocaleString();
       document.getElementById("cardExpense").innerText = "₩ " + cardTotal.toLocaleString();
       document.getElementById("cashExpense").innerText = "₩ " + cashTotal.toLocaleString();
       document.getElementById("nextCardExpense").innerText = "₩ " + nextCardTotal.toLocaleString();
+
+      document.getElementById("expenseBreakdown").innerHTML =
+        `훈카드 ₩${payerBreakdown["훈카드"].toLocaleString()} / 훈현금 ₩${payerBreakdown["훈현금"].toLocaleString()}<br>` +
+        `쭈카드 ₩${payerBreakdown["쭈카드"].toLocaleString()} / 쭈현금 ₩${payerBreakdown["쭈현금"].toLocaleString()}`;
+
+      document.getElementById("cardBreakdown").innerHTML = cardBreakdownText;
+      document.getElementById("cashBreakdown").innerHTML = cashBreakdownText;
 
       document.getElementById("personSummary").innerHTML = `
         <div class="line">훈: ₩ ${personTotals["훈"].toLocaleString()}</div>
@@ -324,10 +447,7 @@
     }
 
     async function saveExpense() {
-      const dateValue =
-        document.getElementById("expenseDate").value ||
-        new Date().toISOString().split("T")[0];
-
+      const dateValue = document.getElementById("expenseDate").value || getTodayString();
       const amount = document.getElementById("amount").value;
       const payment = document.getElementById("payment").value;
       const person = document.getElementById("person").value;
@@ -353,7 +473,7 @@
       } else {
         document.getElementById("amount").value = "";
         document.getElementById("memo").value = "";
-        loadExpenses();
+        await loadExpenses();
       }
     }
 
@@ -369,15 +489,18 @@
       if (error) {
         alert("삭제 실패: " + error.message);
       } else {
-        loadExpenses();
+        await loadExpenses();
       }
     }
 
     async function loadIncome() {
+      const { startString, endString } = getSelectedMonthRange();
+
       const { data, error } = await supabaseClient
         .from("income")
         .select("*")
-        .gte("date", firstDayString)
+        .gte("date", startString)
+        .lt("date", endString)
         .order("date", { ascending: false })
         .order("id", { ascending: false });
 
@@ -389,25 +512,34 @@
       if (!data || data.length === 0) {
         document.getElementById("incomeList").innerHTML = "저장된 수입이 없습니다.";
         document.getElementById("totalIncome").innerText = "₩ 0";
+        document.getElementById("incomeBreakdown").innerText = "훈 ₩0 / 쭈 ₩0 / 기타 ₩0";
         updateRemaining();
         return;
       }
 
       let total = 0;
+      const incomeMap = { "훈": 0, "쭈": 0, "기타": 0 };
       let html = "";
 
       data.forEach((item) => {
         const amt = Number(item.amount || 0);
         total += amt;
 
+        const person = item.person || "기타";
+        if (incomeMap[person] !== undefined) {
+          incomeMap[person] += amt;
+        } else {
+          incomeMap["기타"] += amt;
+        }
+
         html += `
           <div class="line">
             <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
               <strong>${amt.toLocaleString()}원</strong>
-              <button class="small-delete-btn" onclick="deleteIncome(${item.id})">삭제</button>
+              <button class="small-btn danger-btn" onclick="deleteIncome(${item.id})">삭제</button>
             </div>
             <div class="sub">
-              ${item.date || "-"} / ${item.person || "-"} / ${item.memo || ""}
+              ${item.date || "-"} / ${person} / ${item.memo || ""}
             </div>
           </div>
         `;
@@ -415,14 +547,13 @@
 
       document.getElementById("incomeList").innerHTML = html;
       document.getElementById("totalIncome").innerText = "₩ " + total.toLocaleString();
+      document.getElementById("incomeBreakdown").innerHTML =
+        `훈 ₩${incomeMap["훈"].toLocaleString()} / 쭈 ₩${incomeMap["쭈"].toLocaleString()} / 기타 ₩${incomeMap["기타"].toLocaleString()}`;
       updateRemaining();
     }
 
     async function saveIncome() {
-      const dateValue =
-        document.getElementById("incomeDate").value ||
-        new Date().toISOString().split("T")[0];
-
+      const dateValue = document.getElementById("incomeDate").value || getTodayString();
       const amount = document.getElementById("incomeAmount").value;
       const person = document.getElementById("incomePerson").value;
       const memo = document.getElementById("incomeMemo").value;
@@ -446,7 +577,7 @@
       } else {
         document.getElementById("incomeAmount").value = "";
         document.getElementById("incomeMemo").value = "";
-        loadIncome();
+        await loadIncome();
       }
     }
 
@@ -462,24 +593,24 @@
       if (error) {
         alert("수입 삭제 실패: " + error.message);
       } else {
-        loadIncome();
+        await loadIncome();
       }
     }
 
-    async function loadAuto() {
+    async function loadFixedExpenses() {
       const { data, error } = await supabaseClient
-        .from("auto_expense")
+        .from("fixed_expenses")
         .select("*")
         .order("day", { ascending: true })
         .order("id", { ascending: true });
 
       if (error) {
-        document.getElementById("autoList").innerHTML = "자동이체 불러오기 실패";
+        document.getElementById("fixedList").innerHTML = "고정지출 불러오기 실패";
         return;
       }
 
       if (!data || data.length === 0) {
-        document.getElementById("autoList").innerHTML = "등록된 자동이체 없음";
+        document.getElementById("fixedList").innerHTML = "등록된 고정지출이 없습니다.";
         return;
       }
 
@@ -490,69 +621,188 @@
           <div class="line">
             <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
               <strong>매달 ${item.day}일 / ${item.name}</strong>
-              <button class="small-delete-btn" onclick="deleteAuto(${item.id})">삭제</button>
+              <div class="inline-actions">
+                <button class="small-btn" onclick="editFixedExpense(${item.id}, '${(item.name || "").replace(/'/g, "\\'")}', ${item.amount || 0}, ${item.day || 1}, '${(item.payment_method || "").replace(/'/g, "\\'")}', '${(item.person || "").replace(/'/g, "\\'")}', '${(item.memo || "").replace(/'/g, "\\'")}', ${item.is_active ? "true" : "false"})">수정</button>
+                <button class="small-btn danger-btn" onclick="deleteFixedExpense(${item.id})">삭제</button>
+              </div>
             </div>
             <div class="sub">
-              ${item.type || "-"} / ₩ ${Number(item.amount || 0).toLocaleString()}
+              ${item.person || "-"} / ${item.payment_method || "-"} / ₩${Number(item.amount || 0).toLocaleString()} / ${item.memo || ""}
+              ${item.is_active ? "" : "<br>사용안함"}
             </div>
           </div>
         `;
       });
 
-      document.getElementById("autoList").innerHTML = html;
+      document.getElementById("fixedList").innerHTML = html;
     }
 
-    async function saveAuto() {
-      const name = document.getElementById("autoName").value;
-      const amount = document.getElementById("autoAmount").value;
-      const day = document.getElementById("autoDay").value;
-      const type = document.getElementById("autoType").value;
+    function editFixedExpense(id, name, amount, day, paymentMethod, person, memo, isActive) {
+      document.getElementById("fixedId").value = id;
+      document.getElementById("fixedName").value = name || "";
+      document.getElementById("fixedAmount").value = amount || "";
+      document.getElementById("fixedDay").value = day || "";
+      document.getElementById("fixedPayment").value = paymentMethod || "카드";
+      document.getElementById("fixedPerson").value = person || "훈";
+      document.getElementById("fixedMemo").value = memo || "";
+      document.getElementById("fixedActive").checked = !!isActive;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function resetFixedForm() {
+      document.getElementById("fixedId").value = "";
+      document.getElementById("fixedName").value = "";
+      document.getElementById("fixedAmount").value = "";
+      document.getElementById("fixedDay").value = "";
+      document.getElementById("fixedPayment").value = "카드";
+      document.getElementById("fixedPerson").value = "훈";
+      document.getElementById("fixedMemo").value = "";
+      document.getElementById("fixedActive").checked = true;
+    }
+
+    async function saveOrUpdateFixedExpense() {
+      const id = document.getElementById("fixedId").value;
+      const name = document.getElementById("fixedName").value;
+      const amount = document.getElementById("fixedAmount").value;
+      const day = document.getElementById("fixedDay").value;
+      const paymentMethod = document.getElementById("fixedPayment").value;
+      const person = document.getElementById("fixedPerson").value;
+      const memo = document.getElementById("fixedMemo").value;
+      const isActive = document.getElementById("fixedActive").checked;
 
       if (!name || !amount || !day) {
-        alert("다 입력하세요");
+        alert("이름, 금액, 날짜를 입력하세요");
         return;
       }
 
-      const { error } = await supabaseClient
-        .from("auto_expense")
-        .insert([{
-          name: name,
-          amount: Number(amount),
-          day: Number(day),
-          type: type
-        }]);
+      const payload = {
+        name,
+        amount: Number(amount),
+        day: Number(day),
+        payment_method: paymentMethod,
+        person,
+        memo,
+        is_active: isActive
+      };
+
+      let error;
+
+      if (id) {
+        const result = await supabaseClient
+          .from("fixed_expenses")
+          .update(payload)
+          .eq("id", id);
+        error = result.error;
+      } else {
+        const result = await supabaseClient
+          .from("fixed_expenses")
+          .insert([payload]);
+        error = result.error;
+      }
 
       if (error) {
-        alert("자동이체 저장 실패: " + error.message);
+        alert("고정지출 저장 실패: " + error.message);
       } else {
-        alert("자동이체 저장 완료");
-        document.getElementById("autoName").value = "";
-        document.getElementById("autoAmount").value = "";
-        document.getElementById("autoDay").value = "";
-        loadAuto();
+        resetFixedForm();
+        await loadFixedExpenses();
       }
     }
 
-    async function deleteAuto(id) {
-      const ok = confirm("자동이체를 삭제할까요?");
+    async function deleteFixedExpense(id) {
+      const ok = confirm("고정지출을 삭제할까요?");
       if (!ok) return;
 
       const { error } = await supabaseClient
-        .from("auto_expense")
+        .from("fixed_expenses")
         .delete()
         .eq("id", id);
 
       if (error) {
-        alert("자동이체 삭제 실패: " + error.message);
+        alert("고정지출 삭제 실패: " + error.message);
       } else {
-        loadAuto();
+        await loadFixedExpenses();
       }
     }
 
-    setTodayDefaultValues();
+    function getDateStringFromMonthAndDay(year, month, day) {
+      const lastDay = new Date(year, month, 0).getDate();
+      const safeDay = Math.min(Number(day), lastDay);
+      const y = String(year);
+      const m = String(month).padStart(2, "0");
+      const d = String(safeDay).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    async function importFixedExpenses() {
+      const { year, month, startString, endString, monthValue } = getSelectedMonthRange();
+
+      const { data: fixedItems, error: fixedError } = await supabaseClient
+        .from("fixed_expenses")
+        .select("*")
+        .eq("is_active", true);
+
+      if (fixedError) {
+        alert("고정지출 불러오기 실패: " + fixedError.message);
+        return;
+      }
+
+      if (!fixedItems || fixedItems.length === 0) {
+        alert("불러올 고정지출이 없습니다.");
+        return;
+      }
+
+      const { data: existingItems, error: existingError } = await supabaseClient
+        .from("expenses")
+        .select("fixed_expense_id")
+        .gte("date", startString)
+        .lt("date", endString)
+        .not("fixed_expense_id", "is", null);
+
+      if (existingError) {
+        alert("중복 확인 실패: " + existingError.message);
+        return;
+      }
+
+      const existingIds = new Set((existingItems || []).map(item => item.fixed_expense_id));
+      const rowsToInsert = fixedItems
+        .filter(item => !existingIds.has(item.id))
+        .map(item => ({
+          date: getDateStringFromMonthAndDay(year, month, item.day),
+          amount: Number(item.amount || 0),
+          payment_method: item.payment_method || "현금",
+          person: item.person || "기타",
+          memo: item.memo ? `${item.name} / ${item.memo}` : item.name,
+          fixed_expense_id: item.id
+        }));
+
+      if (rowsToInsert.length === 0) {
+        alert(`${monthValue}에는 이미 모두 불러왔습니다.`);
+        return;
+      }
+
+      const { error } = await supabaseClient
+        .from("expenses")
+        .insert(rowsToInsert);
+
+      if (error) {
+        alert("고정지출 불러오기 실패: " + error.message);
+      } else {
+        alert(`${rowsToInsert.length}건 불러왔습니다.`);
+        await loadExpenses();
+      }
+    }
+
+    async function applySelectedMonth() {
+      updateSelectedMonthLabel();
+      await loadExpenses();
+      await loadIncome();
+    }
+
+    setDefaultDates();
+    updateSelectedMonthLabel();
     loadExpenses();
     loadIncome();
-    loadAuto();
+    loadFixedExpenses();
   </script>
 </body>
 </html>
