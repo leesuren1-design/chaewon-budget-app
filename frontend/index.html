@@ -199,13 +199,24 @@
 }
     
 
-    let total = 0
+let total = 0
 let cardTotal = 0
 let cashTotal = 0
+let personTotals = {
+  "훈": 0,
+  "쭈": 0,
+  "채원": 0,
+  "나은": 0,
+  "기타": 0
+}
 let html = ""
 
       data.forEach(item => {
         total += Number(item.amount || 0)
+
+if (personTotals[item.person] !== undefined) {
+  personTotals[item.person] += Number(item.amount || 0)
+}
         
 if (item.payment_method === "카드") {
   cardTotal += Number(item.amount || 0)
@@ -235,6 +246,17 @@ document.getElementById("totalExpense").innerText = "₩ " + total.toLocaleStrin
 document.getElementById("cardExpense").innerText = "₩ " + cardTotal.toLocaleString()
 document.getElementById("cashExpense").innerText = "₩ " + cashTotal.toLocaleString()
 updateRemaining()
+
+const personHtml = `
+  <div style="padding:8px 0; border-bottom:1px solid #eee;">훈: ₩ ${personTotals["훈"].toLocaleString()}</div>
+  <div style="padding:8px 0; border-bottom:1px solid #eee;">쭈: ₩ ${personTotals["쭈"].toLocaleString()}</div>
+  <div style="padding:8px 0; border-bottom:1px solid #eee;">채원: ₩ ${personTotals["채원"].toLocaleString()}</div>
+  <div style="padding:8px 0; border-bottom:1px solid #eee;">나은: ₩ ${personTotals["나은"].toLocaleString()}</div>
+  <div style="padding:8px 0;">기타: ₩ ${personTotals["기타"].toLocaleString()}</div>
+`
+
+document.getElementById("personSummary").innerHTML = personHtml
+      
     }
 
     async function saveExpense() {
@@ -299,6 +321,7 @@ updateRemaining()
   if (!data || data.length === 0) {
     document.getElementById("incomeList").innerHTML = "저장된 수입이 없습니다."
     document.getElementById("totalIncome").innerText = "₩ 0"
+    document.getElementById("personSummary").innerHTML = "저장된 내역이 없습니다."
     updateRemaining()
     return
   }
