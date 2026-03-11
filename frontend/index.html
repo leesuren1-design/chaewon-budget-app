@@ -13,15 +13,19 @@
       padding: 20px;
     }
 
+    h1, h3 {
+      margin-top: 0;
+    }
+
     h1 {
       text-align: center;
+      margin-bottom: 20px;
     }
 
     .dashboard {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 15px;
-      margin-top: 20px;
       margin-bottom: 20px;
     }
 
@@ -50,13 +54,8 @@
       cursor: pointer;
     }
 
-    input, select {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      box-sizing: border-box;
+    .primary-btn {
+      background: #ffe6ee;
     }
 
     .small-delete-btn {
@@ -64,6 +63,15 @@
       font-size: 12px;
       background: #ffe5e5;
       box-shadow: none;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-sizing: border-box;
     }
 
     .line {
@@ -75,6 +83,11 @@
       font-size: 14px;
       color: #666;
       margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    .summary-strong {
+      font-size: 20px;
     }
   </style>
 </head>
@@ -84,32 +97,32 @@
   <div class="dashboard">
     <div class="card">
       총 수입<br />
-      <strong id="totalIncome">₩ 0</strong>
+      <strong id="totalIncome" class="summary-strong">₩ 0</strong>
     </div>
 
     <div class="card">
       총 지출<br />
-      <strong id="totalExpense">₩ 0</strong>
+      <strong id="totalExpense" class="summary-strong">₩ 0</strong>
     </div>
 
     <div class="card">
       남은 금액<br />
-      <strong id="remainingMoney">₩ 0</strong>
+      <strong id="remainingMoney" class="summary-strong">₩ 0</strong>
     </div>
 
     <div class="card">
       다음달 카드 결제<br />
-      <strong>₩ 0</strong>
+      <strong id="nextCardExpense" class="summary-strong">₩ 0</strong>
     </div>
 
     <div class="card">
       카드 지출<br />
-      <strong id="cardExpense">₩ 0</strong>
+      <strong id="cardExpense" class="summary-strong">₩ 0</strong>
     </div>
 
     <div class="card">
       현금 지출<br />
-      <strong id="cashExpense">₩ 0</strong>
+      <strong id="cashExpense" class="summary-strong">₩ 0</strong>
     </div>
   </div>
 
@@ -134,12 +147,13 @@
 
     <input id="memo" placeholder="메모" /><br /><br />
 
-    <button onclick="saveExpense()">지출 저장</button>
+    <button class="primary-btn" onclick="saveExpense()">지출 저장</button>
   </div>
 
   <div class="card">
     <h3>수입 입력</h3>
 
+    <input id="incomeDate" type="date" /><br /><br />
     <input id="incomeAmount" placeholder="금액" /><br /><br />
 
     <select id="incomePerson">
@@ -152,7 +166,28 @@
 
     <input id="incomeMemo" placeholder="메모" /><br /><br />
 
-    <button onclick="saveIncome()">수입 저장</button>
+    <button class="primary-btn" onclick="saveIncome()">수입 저장</button>
+  </div>
+
+  <div class="card">
+    <h3>자동이체 등록</h3>
+
+    <input id="autoName" placeholder="이름 (예: 카드값)" /><br /><br />
+    <input id="autoAmount" placeholder="금액" /><br /><br />
+    <input id="autoDay" type="number" placeholder="매달 몇일 (예: 10)" /><br /><br />
+
+    <select id="autoType">
+      <option value="카드">카드</option>
+      <option value="현금">현금</option>
+      <option value="계좌이체">계좌이체</option>
+    </select><br /><br />
+
+    <button class="primary-btn" onclick="saveAuto()">등록</button>
+  </div>
+
+  <div class="card">
+    <h3>자동이체 목록</h3>
+    <div id="autoList">불러오는 중...</div>
   </div>
 
   <div class="card">
@@ -179,29 +214,6 @@
     <button>레시피</button>
   </div>
 
-<div class="card">
-  <h3>자동이체 등록</h3>
-
-  <input id="autoName" placeholder="이름 (예: 카드값)" /><br><br>
-
-  <input id="autoAmount" placeholder="금액" /><br><br>
-
-  <input id="autoDay" type="number" placeholder="매달 몇일 (예:10)" /><br><br>
-
-  <select id="autoType">
-    <option value="카드">카드</option>
-    <option value="현금">현금</option>
-  </select><br><br>
-
-  <button onclick="saveAuto()">등록</button>
-</div>
-
-<div class="card">
-  <h3>자동이체 목록</h3>
-  <div id="autoList">불러오는 중...</div>
-</div>
-
-  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://kxdafjemyjwurpjlxmaf.supabase.co";
@@ -220,11 +232,25 @@
       document.getElementById("remainingMoney").innerText = "₩ " + remain.toLocaleString();
     }
 
+    function setTodayDefaultValues() {
+      const todayString = new Date().toISOString().split("T")[0];
+      const expenseDateInput = document.getElementById("expenseDate");
+      const incomeDateInput = document.getElementById("incomeDate");
+
+      if (expenseDateInput && !expenseDateInput.value) {
+        expenseDateInput.value = todayString;
+      }
+      if (incomeDateInput && !incomeDateInput.value) {
+        incomeDateInput.value = todayString;
+      }
+    }
+
     async function loadExpenses() {
       const { data, error } = await supabaseClient
         .from("expenses")
         .select("*")
         .gte("date", firstDayString)
+        .order("date", { ascending: false })
         .order("id", { ascending: false });
 
       if (error) {
@@ -237,6 +263,7 @@
         document.getElementById("totalExpense").innerText = "₩ 0";
         document.getElementById("cardExpense").innerText = "₩ 0";
         document.getElementById("cashExpense").innerText = "₩ 0";
+        document.getElementById("nextCardExpense").innerText = "₩ 0";
         document.getElementById("personSummary").innerHTML = "저장된 내역이 없습니다.";
         updateRemaining();
         return;
@@ -245,6 +272,7 @@
       let total = 0;
       let cardTotal = 0;
       let cashTotal = 0;
+      let nextCardTotal = 0;
       const personTotals = { "훈": 0, "쭈": 0, "채원": 0, "나은": 0, "기타": 0 };
       let html = "";
 
@@ -252,9 +280,18 @@
         const amt = Number(item.amount || 0);
         total += amt;
 
-        if (item.payment_method === "카드") cardTotal += amt;
-        if (item.payment_method === "현금") cashTotal += amt;
-        if (personTotals[item.person] !== undefined) personTotals[item.person] += amt;
+        if (item.payment_method === "카드") {
+          cardTotal += amt;
+          nextCardTotal += amt;
+        }
+
+        if (item.payment_method === "현금") {
+          cashTotal += amt;
+        }
+
+        if (personTotals[item.person] !== undefined) {
+          personTotals[item.person] += amt;
+        }
 
         html += `
           <div class="line">
@@ -273,6 +310,7 @@
       document.getElementById("totalExpense").innerText = "₩ " + total.toLocaleString();
       document.getElementById("cardExpense").innerText = "₩ " + cardTotal.toLocaleString();
       document.getElementById("cashExpense").innerText = "₩ " + cashTotal.toLocaleString();
+      document.getElementById("nextCardExpense").innerText = "₩ " + nextCardTotal.toLocaleString();
 
       document.getElementById("personSummary").innerHTML = `
         <div class="line">훈: ₩ ${personTotals["훈"].toLocaleString()}</div>
@@ -285,40 +323,40 @@
       updateRemaining();
     }
 
-async function saveExpense() {
-  const amount = document.getElementById("amount").value;
-  const payment = document.getElementById("payment").value;
-  const person = document.getElementById("person").value;
-  const memo = document.getElementById("memo").value;
+    async function saveExpense() {
+      const dateValue =
+        document.getElementById("expenseDate").value ||
+        new Date().toISOString().split("T")[0];
 
-  const dateValue =
-    document.getElementById("expenseDate").value ||
-    new Date().toISOString().split("T")[0];
+      const amount = document.getElementById("amount").value;
+      const payment = document.getElementById("payment").value;
+      const person = document.getElementById("person").value;
+      const memo = document.getElementById("memo").value;
 
-  if (!amount) {
-    alert("금액을 입력하세요");
-    return;
-  }
+      if (!amount) {
+        alert("금액을 입력하세요");
+        return;
+      }
 
-  const { error } = await supabaseClient
-    .from("expenses")
-    .insert([{
-      date: dateValue,
-      amount: Number(amount),
-      payment_method: payment,
-      person: person,
-      memo: memo
-    }]);
+      const { error } = await supabaseClient
+        .from("expenses")
+        .insert([{
+          date: dateValue,
+          amount: Number(amount),
+          payment_method: payment,
+          person: person,
+          memo: memo
+        }]);
 
-  if (error) {
-    alert("저장 실패: " + error.message);
-  } else {
-    document.getElementById("amount").value = "";
-    document.getElementById("memo").value = "";
-    loadExpenses();
-  }
-}
-    
+      if (error) {
+        alert("저장 실패: " + error.message);
+      } else {
+        document.getElementById("amount").value = "";
+        document.getElementById("memo").value = "";
+        loadExpenses();
+      }
+    }
+
     async function deleteExpense(id) {
       const ok = confirm("삭제할까요?");
       if (!ok) return;
@@ -340,6 +378,7 @@ async function saveExpense() {
         .from("income")
         .select("*")
         .gte("date", firstDayString)
+        .order("date", { ascending: false })
         .order("id", { ascending: false });
 
       if (error) {
@@ -380,6 +419,10 @@ async function saveExpense() {
     }
 
     async function saveIncome() {
+      const dateValue =
+        document.getElementById("incomeDate").value ||
+        new Date().toISOString().split("T")[0];
+
       const amount = document.getElementById("incomeAmount").value;
       const person = document.getElementById("incomePerson").value;
       const memo = document.getElementById("incomeMemo").value;
@@ -392,7 +435,7 @@ async function saveExpense() {
       const { error } = await supabaseClient
         .from("income")
         .insert([{
-          date: new Date().toISOString().split("T")[0],
+          date: dateValue,
           amount: Number(amount),
           person: person,
           memo: memo
@@ -423,58 +466,93 @@ async function saveExpense() {
       }
     }
 
+    async function loadAuto() {
+      const { data, error } = await supabaseClient
+        .from("auto_expense")
+        .select("*")
+        .order("day", { ascending: true })
+        .order("id", { ascending: true });
+
+      if (error) {
+        document.getElementById("autoList").innerHTML = "자동이체 불러오기 실패";
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        document.getElementById("autoList").innerHTML = "등록된 자동이체 없음";
+        return;
+      }
+
+      let html = "";
+
+      data.forEach((item) => {
+        html += `
+          <div class="line">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+              <strong>매달 ${item.day}일 / ${item.name}</strong>
+              <button class="small-delete-btn" onclick="deleteAuto(${item.id})">삭제</button>
+            </div>
+            <div class="sub">
+              ${item.type || "-"} / ₩ ${Number(item.amount || 0).toLocaleString()}
+            </div>
+          </div>
+        `;
+      });
+
+      document.getElementById("autoList").innerHTML = html;
+    }
+
+    async function saveAuto() {
+      const name = document.getElementById("autoName").value;
+      const amount = document.getElementById("autoAmount").value;
+      const day = document.getElementById("autoDay").value;
+      const type = document.getElementById("autoType").value;
+
+      if (!name || !amount || !day) {
+        alert("다 입력하세요");
+        return;
+      }
+
+      const { error } = await supabaseClient
+        .from("auto_expense")
+        .insert([{
+          name: name,
+          amount: Number(amount),
+          day: Number(day),
+          type: type
+        }]);
+
+      if (error) {
+        alert("자동이체 저장 실패: " + error.message);
+      } else {
+        alert("자동이체 저장 완료");
+        document.getElementById("autoName").value = "";
+        document.getElementById("autoAmount").value = "";
+        document.getElementById("autoDay").value = "";
+        loadAuto();
+      }
+    }
+
+    async function deleteAuto(id) {
+      const ok = confirm("자동이체를 삭제할까요?");
+      if (!ok) return;
+
+      const { error } = await supabaseClient
+        .from("auto_expense")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        alert("자동이체 삭제 실패: " + error.message);
+      } else {
+        loadAuto();
+      }
+    }
+
+    setTodayDefaultValues();
     loadExpenses();
     loadIncome();
-
-
-    async function loadAuto() {
-  const { data, error } = await supabaseClient
-    .from("auto_expense")
-    .select("*")
-    .order("day")
-
-  if (error) return
-
-  let html = ""
-
-  data.forEach(item => {
-    html += `
-      <div style="padding:8px 0;border-bottom:1px solid #eee;">
-        매달 ${item.day}일 / ${item.name} / ₩${Number(item.amount).toLocaleString()}
-      </div>
-    `
-  })
-
-  document.getElementById("autoList").innerHTML =
-    html || "등록된 자동이체 없음"
-}
-
-async function saveAuto() {
-  const name = document.getElementById("autoName").value
-  const amount = document.getElementById("autoAmount").value
-  const day = document.getElementById("autoDay").value
-  const type = document.getElementById("autoType").value
-
-  if (!name || !amount || !day) {
-    alert("다 입력하세요")
-    return
-  }
-
-  await supabaseClient.from("auto_expense").insert([{
-    name:name,
-    amount:Number(amount),
-    day:Number(day),
-    type:type
-  }])
-
-  document.getElementById("autoName").value=""
-  document.getElementById("autoAmount").value=""
-  document.getElementById("autoDay").value=""
-
-  loadAuto()
-}
-
-loadAuto()
+    loadAuto();
   </script>
 </body>
 </html>
