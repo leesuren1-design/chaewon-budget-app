@@ -425,6 +425,56 @@ async function saveExpense() {
 
     loadExpenses();
     loadIncome();
+
+
+    async function loadAuto() {
+  const { data, error } = await supabaseClient
+    .from("auto_expense")
+    .select("*")
+    .order("day")
+
+  if (error) return
+
+  let html = ""
+
+  data.forEach(item => {
+    html += `
+      <div style="padding:8px 0;border-bottom:1px solid #eee;">
+        매달 ${item.day}일 / ${item.name} / ₩${Number(item.amount).toLocaleString()}
+      </div>
+    `
+  })
+
+  document.getElementById("autoList").innerHTML =
+    html || "등록된 자동이체 없음"
+}
+
+async function saveAuto() {
+  const name = document.getElementById("autoName").value
+  const amount = document.getElementById("autoAmount").value
+  const day = document.getElementById("autoDay").value
+  const type = document.getElementById("autoType").value
+
+  if (!name || !amount || !day) {
+    alert("다 입력하세요")
+    return
+  }
+
+  await supabaseClient.from("auto_expense").insert([{
+    name:name,
+    amount:Number(amount),
+    day:Number(day),
+    type:type
+  }])
+
+  document.getElementById("autoName").value=""
+  document.getElementById("autoAmount").value=""
+  document.getElementById("autoDay").value=""
+
+  loadAuto()
+}
+
+loadAuto()
   </script>
 </body>
 </html>
