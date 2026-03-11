@@ -91,6 +91,16 @@
     </div>
   </div>
 
+<div class="card">
+  카드 지출<br>
+  <strong id="cardExpense">₩ 0</strong>
+</div>
+
+<div class="card">
+  현금 지출<br>
+  <strong id="cashExpense">₩ 0</strong>
+</div>
+  
   <div class="card">
     <h3>지출 입력</h3>
 
@@ -179,19 +189,33 @@
         return
       }
 
-      if (!data || data.length === 0) {
-        document.getElementById("expenseList").innerHTML = "저장된 내역이 없습니다."
-        document.getElementById("totalExpense").innerText = "₩ 0"
-        updateRemaining()
-        return
+    if (!data || data.length === 0) {
+  document.getElementById("expenseList").innerHTML = "저장된 내역이 없습니다."
+  document.getElementById("totalExpense").innerText = "₩ 0"
+  document.getElementById("cardExpense").innerText = "₩ 0"
+  document.getElementById("cashExpense").innerText = "₩ 0"
+  updateRemaining()
+  return
+}
       }
 
-      let total = 0
-      let html = ""
+    let total = 0
+let cardTotal = 0
+let cashTotal = 0
+let html = ""
 
       data.forEach(item => {
         total += Number(item.amount || 0)
+        
+if (item.payment_method === "카드") {
+  cardTotal += Number(item.amount || 0)
+}
 
+if (item.payment_method === "현금") {
+  cashTotal += Number(item.amount || 0)
+}
+
+        
         html += `
           <div style="padding:10px 0; border-bottom:1px solid #eee;">
             <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
@@ -205,9 +229,12 @@
         `
       })
 
+
       document.getElementById("expenseList").innerHTML = html
-      document.getElementById("totalExpense").innerText = "₩ " + total.toLocaleString()
-      updateRemaining()
+document.getElementById("totalExpense").innerText = "₩ " + total.toLocaleString()
+document.getElementById("cardExpense").innerText = "₩ " + cardTotal.toLocaleString()
+document.getElementById("cashExpense").innerText = "₩ " + cashTotal.toLocaleString()
+updateRemaining()
     }
 
     async function saveExpense() {
