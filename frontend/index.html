@@ -118,6 +118,11 @@
 
   <div class="card">
     <h3>월 선택</h3>
+<div class="card">
+  <h3>월 달력</h3>
+  <div id="monthCalendar">불러오는 중...</div>
+</div>
+    
     <div class="row">
       <input id="monthPicker" type="month" />
       <button class="primary-btn" onclick="applySelectedMonth()">불러오기</button>
@@ -792,17 +797,89 @@
       }
     }
 
-    async function applySelectedMonth() {
-      updateSelectedMonthLabel();
-      await loadExpenses();
-      await loadIncome();
-    }
+
+async function loadCalendar() {
+  const { year, month, startString, endString } = getSelectedMonthRange();
+
+  const { data, error } = await supabaseClient
+    .from("expenses")
+    .select("date, amount")
+    .gte("date", startString)
+    .lt("date", endString);
+
+  if (error) {
+    document.getElementById("monthCalendar").innerHTML = "달력 불러오기 실패";
+    return;
+  }
+
+  const totalsByDate = {};
+  (data || []).forEach(item => {
+    const key = item.date;
+    totalsByDate[key] = (totalsByDate[key] || 0) + Number(item.amount || 0);
+  });
+
+  const firstDate = new Date(year, month - 1, 1);
+  const firstDay = firstDate.getDay(); // 0=일
+  const daysInMonth = new Date(year, month, 0).getDate();
+
+  const weekNames = ["일", "월", "화", "수", "목", "금", "토"];
+
+  let html = `
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:8px;">
+      ${weekNames.map(day => `
+        <div style="text-align:center;font-weight:700;padding:8px 0;">
+          ${day}
+        </div>
+      `).join("")}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;">
+  `;
+
+  for (let i = 0; i < firstDay; i++) {
+    html += `<div></div>`;
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateString =
+      `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+    const total = totalsByDate[dateString] || 0;
+
+    html += `
+      <div style="
+        min-height:78px;
+        border:1px solid #eee;
+        border-radius:12px;
+        padding:8px;
+        background:white;
+      ">
+        <div style="font-weight:700;margin-bottom:6px;">${day}</div>
+        <div style="font-size:13px;color:#666;">
+          ${total > 0 ? "₩ " + total.toLocaleString() : ""}
+        </div>
+      </div>
+    `;
+  }
+
+  html += `</div>`;
+
+  document.getElementById("monthCalendar").innerHTML = html;
+}
+
+    
+  async function applySelectedMonth() {
+  updateSelectedMonthLabel();
+  await loadExpenses();
+  await loadIncome();
+  await loadCalendar();
+}
 
     setDefaultDates();
     updateSelectedMonthLabel();
     loadExpenses();
     loadIncome();
     loadFixedExpenses();
+    loadCalendar();
   </script>
 </body>
 </html>
