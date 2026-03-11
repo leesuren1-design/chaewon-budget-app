@@ -1,119 +1,127 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>채원나은이네 가계부</title>
 
   <style>
-    body{
-      font-family:sans-serif;
-      background:#f6f2f4;
-      margin:0;
-      padding:20px;
+    body {
+      font-family: sans-serif;
+      background: #f6f2f4;
+      margin: 0;
+      padding: 20px;
     }
 
-    h1{
-      text-align:center;
+    h1 {
+      text-align: center;
     }
 
-    .dashboard{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:15px;
-      margin-top:20px;
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 20px;
+      margin-bottom: 20px;
     }
 
-    .card{
-      background:white;
-      border-radius:12px;
-      padding:20px;
-      box-shadow:0 2px 6px rgba(0,0,0,0.1);
-      margin-bottom:20px;
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
     }
 
-    .menu{
-      margin-top:30px;
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:15px;
+    .menu {
+      margin-top: 30px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
     }
 
-    button{
-      padding:14px 20px;
-      border:none;
-      border-radius:12px;
-      background:white;
-      font-size:16px;
-      box-shadow:0 2px 6px rgba(0,0,0,0.1);
-      cursor:pointer;
+    button {
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px;
+      background: white;
+      font-size: 16px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
     }
 
-    input, select{
-      width:100%;
-      padding:12px;
-      font-size:16px;
-      border:1px solid #ddd;
-      border-radius:10px;
-      box-sizing:border-box;
+    input, select {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-sizing: border-box;
     }
 
-    .small-delete-btn{
-      padding:6px 10px;
-      font-size:12px;
-      background:#ffe5e5;
+    .small-delete-btn {
+      padding: 6px 10px;
+      font-size: 12px;
+      background: #ffe5e5;
+      box-shadow: none;
+    }
+
+    .line {
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .sub {
+      font-size: 14px;
+      color: #666;
+      margin-top: 6px;
     }
   </style>
 </head>
-
 <body>
   <h1>채원나은이네 가계부</h1>
 
   <div class="dashboard">
     <div class="card">
-      총 수입<br>
+      총 수입<br />
       <strong id="totalIncome">₩ 0</strong>
     </div>
 
     <div class="card">
-      총 지출<br>
+      총 지출<br />
       <strong id="totalExpense">₩ 0</strong>
     </div>
 
     <div class="card">
-      남은 금액<br>
+      남은 금액<br />
       <strong id="remainingMoney">₩ 0</strong>
     </div>
 
     <div class="card">
-      다음달 카드 결제<br>
+      다음달 카드 결제<br />
       <strong>₩ 0</strong>
     </div>
 
-<div class="card">
-  카드 지출<br>
-  <strong id="cardExpense">₩ 0</strong>
-</div>
+    <div class="card">
+      카드 지출<br />
+      <strong id="cardExpense">₩ 0</strong>
+    </div>
 
-<div class="card">
-  현금 지출<br>
-  <strong id="cashExpense">₩ 0</strong>
-</div>
-
-    
+    <div class="card">
+      현금 지출<br />
+      <strong id="cashExpense">₩ 0</strong>
+    </div>
   </div>
 
-
-  
   <div class="card">
     <h3>지출 입력</h3>
 
-    <input id="amount" placeholder="금액" /><br><br>
+    <input id="amount" placeholder="금액" /><br /><br />
 
     <select id="payment">
       <option value="카드">카드</option>
       <option value="현금">현금</option>
-    </select><br><br>
+    </select><br /><br />
 
     <select id="person">
       <option value="훈">훈</option>
@@ -121,9 +129,9 @@
       <option value="채원">채원</option>
       <option value="나은">나은</option>
       <option value="기타">기타</option>
-    </select><br><br>
+    </select><br /><br />
 
-    <input id="memo" placeholder="메모" /><br><br>
+    <input id="memo" placeholder="메모" /><br /><br />
 
     <button onclick="saveExpense()">지출 저장</button>
   </div>
@@ -131,7 +139,7 @@
   <div class="card">
     <h3>수입 입력</h3>
 
-    <input id="incomeAmount" placeholder="금액" /><br><br>
+    <input id="incomeAmount" placeholder="금액" /><br /><br />
 
     <select id="incomePerson">
       <option value="훈">훈</option>
@@ -139,9 +147,9 @@
       <option value="채원">채원</option>
       <option value="나은">나은</option>
       <option value="기타">기타</option>
-    </select><br><br>
+    </select><br /><br />
 
-    <input id="incomeMemo" placeholder="메모" /><br><br>
+    <input id="incomeMemo" placeholder="메모" /><br /><br />
 
     <button onclick="saveIncome()">수입 저장</button>
   </div>
@@ -151,16 +159,16 @@
     <div id="expenseList">불러오는 중...</div>
   </div>
 
-<div class="card">
-  <h3>저장된 수입 내역</h3>
-  <div id="incomeList">불러오는 중...</div>
-</div>
+  <div class="card">
+    <h3>저장된 수입 내역</h3>
+    <div id="incomeList">불러오는 중...</div>
+  </div>
 
-<div class="card">
-  <h3>사람별 지출 합계</h3>
-  <div id="personSummary">불러오는 중...</div>
-</div>
-  
+  <div class="card">
+    <h3>사람별 지출 합계</h3>
+    <div id="personSummary">불러오는 중...</div>
+  </div>
+
   <div class="menu">
     <button>지출 입력</button>
     <button>수입 입력</button>
@@ -171,160 +179,224 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://kxdafjemyjwurpjlxmaf.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_Ht7JYGv9e2Q7CEjnlc5oHw_nsLVZ_wq";
 
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-<script>
-const SUPABASE_URL = "https://kxdafjemyjwurpjlxmaf.supabase.co"
-const SUPABASE_KEY = "sb_publishable_Ht7JYGv9e2Q7CEjnlc5oHw_nsLVZ_wq"
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const firstDayString = firstDayOfMonth.toISOString().split("T")[0];
 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+    function updateRemaining() {
+      const incomeText = document.getElementById("totalIncome").innerText.replace(/[₩,\s]/g, "");
+      const expenseText = document.getElementById("totalExpense").innerText.replace(/[₩,\s]/g, "");
+      const remain = Number(incomeText || 0) - Number(expenseText || 0);
+      document.getElementById("remainingMoney").innerText = "₩ " + remain.toLocaleString();
+    }
 
-const today = new Date()
-const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
-const firstDayString = firstDayOfMonth.toISOString().split("T")[0]
+    async function loadExpenses() {
+      const { data, error } = await supabaseClient
+        .from("expenses")
+        .select("*")
+        .gte("date", firstDayString)
+        .order("id", { ascending: false });
 
-function updateRemaining() {
-  const incomeText = document.getElementById("totalIncome").innerText.replace(/[₩,\s]/g, "")
-  const expenseText = document.getElementById("totalExpense").innerText.replace(/[₩,\s]/g, "")
+      if (error) {
+        document.getElementById("expenseList").innerHTML = "불러오기 실패";
+        return;
+      }
 
-  const remain = Number(incomeText || 0) - Number(expenseText || 0)
-  document.getElementById("remainingMoney").innerText = "₩ " + remain.toLocaleString()
-}
+      if (!data || data.length === 0) {
+        document.getElementById("expenseList").innerHTML = "저장된 내역이 없습니다.";
+        document.getElementById("totalExpense").innerText = "₩ 0";
+        document.getElementById("cardExpense").innerText = "₩ 0";
+        document.getElementById("cashExpense").innerText = "₩ 0";
+        document.getElementById("personSummary").innerHTML = "저장된 내역이 없습니다.";
+        updateRemaining();
+        return;
+      }
 
-async function loadExpenses() {
-  const { data, error } = await supabaseClient
-    .from("expenses")
-    .select("*")
-    .gte("date", firstDayString)
-    .order("id", { ascending: false })
+      let total = 0;
+      let cardTotal = 0;
+      let cashTotal = 0;
+      const personTotals = { "훈": 0, "쭈": 0, "채원": 0, "나은": 0, "기타": 0 };
+      let html = "";
 
-  if (error) {
-    document.getElementById("expenseList").innerHTML = "불러오기 실패"
-    return
-  }
+      data.forEach((item) => {
+        const amt = Number(item.amount || 0);
+        total += amt;
 
-  if (!data || data.length === 0) {
-    document.getElementById("expenseList").innerHTML = "저장된 내역이 없습니다."
-    document.getElementById("totalExpense").innerText = "₩ 0"
-    document.getElementById("cardExpense").innerText = "₩ 0"
-    document.getElementById("cashExpense").innerText = "₩ 0"
-    document.getElementById("personSummary").innerHTML = "저장된 내역이 없습니다."
-    updateRemaining()
-    return
-  }
+        if (item.payment_method === "카드") cardTotal += amt;
+        if (item.payment_method === "현금") cashTotal += amt;
+        if (personTotals[item.person] !== undefined) personTotals[item.person] += amt;
 
-  let total = 0
-  let cardTotal = 0
-  let cashTotal = 0
+        html += `
+          <div class="line">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+              <strong>${amt.toLocaleString()}원</strong>
+              <button class="small-delete-btn" onclick="deleteExpense(${item.id})">삭제</button>
+            </div>
+            <div class="sub">
+              ${item.date || "-"} / ${item.payment_method || "-"} / ${item.person || "-"} / ${item.memo || ""}
+            </div>
+          </div>
+        `;
+      });
 
-  let personTotals = { "훈":0,"쭈":0,"채원":0,"나은":0,"기타":0 }
+      document.getElementById("expenseList").innerHTML = html;
+      document.getElementById("totalExpense").innerText = "₩ " + total.toLocaleString();
+      document.getElementById("cardExpense").innerText = "₩ " + cardTotal.toLocaleString();
+      document.getElementById("cashExpense").innerText = "₩ " + cashTotal.toLocaleString();
 
-  let html = ""
+      document.getElementById("personSummary").innerHTML = `
+        <div class="line">훈: ₩ ${personTotals["훈"].toLocaleString()}</div>
+        <div class="line">쭈: ₩ ${personTotals["쭈"].toLocaleString()}</div>
+        <div class="line">채원: ₩ ${personTotals["채원"].toLocaleString()}</div>
+        <div class="line">나은: ₩ ${personTotals["나은"].toLocaleString()}</div>
+        <div style="padding-top:10px;">기타: ₩ ${personTotals["기타"].toLocaleString()}</div>
+      `;
 
-  data.forEach(item => {
-    total += Number(item.amount || 0)
+      updateRemaining();
+    }
 
-    if (item.payment_method === "카드") cardTotal += Number(item.amount || 0)
-    if (item.payment_method === "현금") cashTotal += Number(item.amount || 0)
+    async function saveExpense() {
+      const amount = document.getElementById("amount").value;
+      const payment = document.getElementById("payment").value;
+      const person = document.getElementById("person").value;
+      const memo = document.getElementById("memo").value;
 
-    if (personTotals[item.person] !== undefined)
-      personTotals[item.person] += Number(item.amount || 0)
+      if (!amount) {
+        alert("금액을 입력하세요");
+        return;
+      }
 
-    html += `
-      <div style="padding:10px 0; border-bottom:1px solid #eee;">
-        <div style="display:flex; justify-content:space-between;">
-          <strong>${Number(item.amount).toLocaleString()}원</strong>
-          <button class="small-delete-btn" onclick="deleteExpense(${item.id})">삭제</button>
-        </div>
-        <div style="font-size:14px;color:#666;">
-          ${item.date || "-"} / ${item.payment_method || "-"} / ${item.person || "-"} / ${item.memo || ""}
-        </div>
-      </div>`
-  })
+      const { error } = await supabaseClient
+        .from("expenses")
+        .insert([{
+          date: new Date().toISOString().split("T")[0],
+          amount: Number(amount),
+          payment_method: payment,
+          person: person,
+          memo: memo
+        }]);
 
-  document.getElementById("expenseList").innerHTML = html
-  document.getElementById("totalExpense").innerText = "₩ " + total.toLocaleString()
-  document.getElementById("cardExpense").innerText = "₩ " + cardTotal.toLocaleString()
-  document.getElementById("cashExpense").innerText = "₩ " + cashTotal.toLocaleString()
+      if (error) {
+        alert("저장 실패: " + error.message);
+      } else {
+        document.getElementById("amount").value = "";
+        document.getElementById("memo").value = "";
+        loadExpenses();
+      }
+    }
 
-  const personHtml = `
-훈 ₩${personTotals["훈"].toLocaleString()}<br>
-쭈 ₩${personTotals["쭈"].toLocaleString()}<br>
-채원 ₩${personTotals["채원"].toLocaleString()}<br>
-나은 ₩${personTotals["나은"].toLocaleString()}<br>
-기타 ₩${personTotals["기타"].toLocaleString()}`
-  document.getElementById("personSummary").innerHTML = personHtml
+    async function deleteExpense(id) {
+      const ok = confirm("삭제할까요?");
+      if (!ok) return;
 
-  updateRemaining()
-}
+      const { error } = await supabaseClient
+        .from("expenses")
+        .delete()
+        .eq("id", id);
 
-async function saveExpense() {
-  const amount = document.getElementById("amount").value
-  const payment = document.getElementById("payment").value
-  const person = document.getElementById("person").value
-  const memo = document.getElementById("memo").value
+      if (error) {
+        alert("삭제 실패: " + error.message);
+      } else {
+        loadExpenses();
+      }
+    }
 
-  if (!amount) return alert("금액 입력")
+    async function loadIncome() {
+      const { data, error } = await supabaseClient
+        .from("income")
+        .select("*")
+        .gte("date", firstDayString)
+        .order("id", { ascending: false });
 
-  const { error } = await supabaseClient.from("expenses").insert([{
-    date: new Date().toISOString().split("T")[0],
-    amount:Number(amount),
-    payment_method:payment,
-    person:person,
-    memo:memo
-  }])
+      if (error) {
+        document.getElementById("incomeList").innerHTML = "수입 불러오기 실패";
+        return;
+      }
 
-  if(error) alert("저장실패")
-  else {
-    document.getElementById("amount").value=""
-    document.getElementById("memo").value=""
-    loadExpenses()
-  }
-}
+      if (!data || data.length === 0) {
+        document.getElementById("incomeList").innerHTML = "저장된 수입이 없습니다.";
+        document.getElementById("totalIncome").innerText = "₩ 0";
+        updateRemaining();
+        return;
+      }
 
-async function deleteExpense(id){
-  if(!confirm("삭제할까요?")) return
-  await supabaseClient.from("expenses").delete().eq("id",id)
-  loadExpenses()
-}
+      let total = 0;
+      let html = "";
 
-async function loadIncome(){
-  const {data,error}=await supabaseClient.from("income").select("*").gte("date",firstDayString)
-  if(error)return
+      data.forEach((item) => {
+        const amt = Number(item.amount || 0);
+        total += amt;
 
-  let total=0,html=""
-  data.forEach(i=>{
-    total+=Number(i.amount||0)
-    html+=`${i.date||"-"} / ${i.person||"-"} / ${i.memo||""}<br>`
-  })
+        html += `
+          <div class="line">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+              <strong>${amt.toLocaleString()}원</strong>
+              <button class="small-delete-btn" onclick="deleteIncome(${item.id})">삭제</button>
+            </div>
+            <div class="sub">
+              ${item.date || "-"} / ${item.person || "-"} / ${item.memo || ""}
+            </div>
+          </div>
+        `;
+      });
 
-  document.getElementById("incomeList").innerHTML=html||"없음"
-  document.getElementById("totalIncome").innerText="₩ "+total.toLocaleString()
-  updateRemaining()
-}
+      document.getElementById("incomeList").innerHTML = html;
+      document.getElementById("totalIncome").innerText = "₩ " + total.toLocaleString();
+      updateRemaining();
+    }
 
-async function saveIncome(){
-  const amount=document.getElementById("incomeAmount").value
-  const person=document.getElementById("incomePerson").value
-  const memo=document.getElementById("incomeMemo").value
+    async function saveIncome() {
+      const amount = document.getElementById("incomeAmount").value;
+      const person = document.getElementById("incomePerson").value;
+      const memo = document.getElementById("incomeMemo").value;
 
-  if(!amount)return alert("금액입력")
+      if (!amount) {
+        alert("금액 입력");
+        return;
+      }
 
-  await supabaseClient.from("income").insert([{
-    date:new Date().toISOString().split("T")[0],
-    amount:Number(amount),
-    person:person,
-    memo:memo
-  }])
+      const { error } = await supabaseClient
+        .from("income")
+        .insert([{
+          date: new Date().toISOString().split("T")[0],
+          amount: Number(amount),
+          person: person,
+          memo: memo
+        }]);
 
-  document.getElementById("incomeAmount").value=""
-  document.getElementById("incomeMemo").value=""
-  loadIncome()
-}
+      if (error) {
+        alert("수입 저장 실패: " + error.message);
+      } else {
+        document.getElementById("incomeAmount").value = "";
+        document.getElementById("incomeMemo").value = "";
+        loadIncome();
+      }
+    }
 
-loadExpenses()
-loadIncome()
-</script>
-  
+    async function deleteIncome(id) {
+      const ok = confirm("수입 내역을 삭제할까요?");
+      if (!ok) return;
+
+      const { error } = await supabaseClient
+        .from("income")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        alert("수입 삭제 실패: " + error.message);
+      } else {
+        loadIncome();
+      }
+    }
+
+    loadExpenses();
+    loadIncome();
+  </script>
 </body>
 </html>
