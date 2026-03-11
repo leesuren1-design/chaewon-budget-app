@@ -284,15 +284,15 @@
         return
       }
 
-      const { error } = await supabaseClient
-        .from("income")
-        .insert([
-          {
-            amount: Number(amount),
-            person: person,
-            memo: memo
-          }
-        ])
+   const { error } = await supabaseClient
+  .from("income")
+  .insert([
+    {
+      amount: Number(amount),
+      person: person,
+      memo: memo
+    }
+  ])
 
       if (error) {
         alert("수입 저장 실패: " + error.message)
