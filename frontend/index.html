@@ -2091,8 +2091,11 @@ if (keyword) {
       </div>
 
       <div class="sub" style="margin-top:14px; white-space:pre-line;">
-        ${item.memo || ""}
-      </div>
+  ${(item.memo || "").replace(
+    /(https?:\/\/[^\s]+)/g,
+    '<a href="$1" target="_blank">▶ 영상보기</a>'
+  )}
+</div>
 
       <div style="display:flex; justify-content:flex-end; margin-top:14px;">
         <button class="small-btn danger-btn" onclick="deleteRecipe(${item.id})">삭제</button>
