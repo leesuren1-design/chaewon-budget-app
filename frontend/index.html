@@ -138,14 +138,15 @@
       font-size: 13px;
     }
 
-    .section-title {
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-
     .pink-strong {
       color: #d94b7d;
       font-weight: 700;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -312,6 +313,7 @@
         <button onclick="resetFixedForm()">입력 초기화</button>
         <button class="primary-btn" onclick="importFixedExpenses()">선택한 달로 불러오기</button>
       </div>
+      <div class="sub">고정지출 저장 시 현재 선택한 달의 지출에도 바로 반영됩니다.</div>
     </div>
 
     <div class="card">
@@ -455,11 +457,6 @@
         recordBtn.classList.remove("active");
         settlementBtn.classList.add("active");
       }
-    }
-
-    function getCardDisplay(paymentMethod, cardName) {
-      if (paymentMethod !== "카드") return paymentMethod || "-";
-      return cardName || "기타카드";
     }
 
     function getRecordModeCardName(item) {
@@ -659,7 +656,8 @@
           payment_method: payment,
           card_name: payment === "카드" ? cardName : "",
           person: person,
-          memo: memo
+          memo: memo,
+          fixed_expense_id: null
         }]);
 
       if (error) {
@@ -667,6 +665,7 @@
       } else {
         document.getElementById("amount").value = "";
         document.getElementById("memo").value = "";
+        document.getElementById("expenseCardName").value = "";
         await loadExpenses();
         await loadCalendar();
         await loadSettlementSummary();
@@ -869,6 +868,76 @@
       document.getElementById("fixedActive").checked = true;
     }
 
+    function getDateStringFromMonthAndDay(year, month, day) {
+      const lastDay = new Date(year, month, 0).getDate();
+      const safeDay = Math.min(Number(day), lastDay);
+      const y = String(year);
+      const m = String(month).padStart(2, "0");
+      const d = String(safeDay).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    async function syncFixedExpenseToSelectedMonth(fixedExpenseId) {
+      const { year, month, startString, endString } = getSelectedMonthRange();
+
+      const { data: fixedItem, error: fixedError } = await supabaseClient
+        .from("fixed_expenses")
+        .select("*")
+        .eq("id", fixedExpenseId)
+        .maybeSingle();
+
+      if (fixedError || !fixedItem) {
+        alert("고정지출 동기화 실패");
+        return;
+      }
+
+      const expenseDate = getDateStringFromMonthAndDay(year, month, fixedItem.day);
+
+      const { data: existingItem, error: existingError } = await supabaseClient
+        .from("expenses")
+        .select("*")
+        .eq("fixed_expense_id", fixedExpenseId)
+        .gte("date", startString)
+        .lt("date", endString)
+        .maybeSingle();
+
+      if (existingError) {
+        alert("기존 고정지출 확인 실패: " + existingError.message);
+        return;
+      }
+
+      const payload = {
+        date: expenseDate,
+        amount: Number(fixedItem.amount || 0),
+        payment_method: fixedItem.payment_method || "현금",
+        card_name: fixedItem.payment_method === "카드" ? (fixedItem.card_name || "") : "",
+        person: fixedItem.person || "기타",
+        memo: fixedItem.memo ? `${fixedItem.name} / ${fixedItem.memo}` : fixedItem.name,
+        fixed_expense_id: fixedItem.id
+      };
+
+      if (existingItem) {
+        const { error: updateError } = await supabaseClient
+          .from("expenses")
+          .update(payload)
+          .eq("id", existingItem.id);
+
+        if (updateError) {
+          alert("고정지출 월 반영 수정 실패: " + updateError.message);
+          return;
+        }
+      } else {
+        const { error: insertError } = await supabaseClient
+          .from("expenses")
+          .insert([payload]);
+
+        if (insertError) {
+          alert("고정지출 월 반영 실패: " + insertError.message);
+          return;
+        }
+      }
+    }
+
     async function saveOrUpdateFixedExpense() {
       const id = document.getElementById("fixedId").value;
       const name = document.getElementById("fixedName").value;
@@ -896,32 +965,63 @@
         is_active: isActive
       };
 
-      let error;
+      let savedId = null;
+      let error = null;
 
       if (id) {
         const result = await supabaseClient
           .from("fixed_expenses")
           .update(payload)
-          .eq("id", id);
+          .eq("id", id)
+          .select()
+          .single();
+
         error = result.error;
+        if (result.data) savedId = result.data.id;
       } else {
         const result = await supabaseClient
           .from("fixed_expenses")
-          .insert([payload]);
+          .insert([payload])
+          .select()
+          .single();
+
         error = result.error;
+        if (result.data) savedId = result.data.id;
       }
 
       if (error) {
         alert("고정지출 저장 실패: " + error.message);
-      } else {
-        resetFixedForm();
-        await loadFixedExpenses();
+        return;
       }
+
+      if (savedId && isActive) {
+        await syncFixedExpenseToSelectedMonth(savedId);
+      }
+
+      resetFixedForm();
+      await loadFixedExpenses();
+      await loadExpenses();
+      await loadCalendar();
+      await loadSettlementSummary();
     }
 
     async function deleteFixedExpense(id) {
-      const ok = confirm("고정지출을 삭제할까요?");
+      const ok = confirm("고정지출을 삭제할까요?\n선택한 달에 불러온 내역도 함께 지울까요?");
       if (!ok) return;
+
+      const { startString, endString } = getSelectedMonthRange();
+
+      const { error: expenseDeleteError } = await supabaseClient
+        .from("expenses")
+        .delete()
+        .eq("fixed_expense_id", id)
+        .gte("date", startString)
+        .lt("date", endString);
+
+      if (expenseDeleteError) {
+        alert("선택한 달 반영내역 삭제 실패: " + expenseDeleteError.message);
+        return;
+      }
 
       const { error } = await supabaseClient
         .from("fixed_expenses")
@@ -932,16 +1032,10 @@
         alert("고정지출 삭제 실패: " + error.message);
       } else {
         await loadFixedExpenses();
+        await loadExpenses();
+        await loadCalendar();
+        await loadSettlementSummary();
       }
-    }
-
-    function getDateStringFromMonthAndDay(year, month, day) {
-      const lastDay = new Date(year, month, 0).getDate();
-      const safeDay = Math.min(Number(day), lastDay);
-      const y = String(year);
-      const m = String(month).padStart(2, "0");
-      const d = String(safeDay).padStart(2, "0");
-      return `${y}-${m}-${d}`;
     }
 
     async function importFixedExpenses() {
@@ -964,7 +1058,7 @@
 
       const { data: existingItems, error: existingError } = await supabaseClient
         .from("expenses")
-        .select("fixed_expense_id")
+        .select("id, fixed_expense_id")
         .gte("date", startString)
         .lt("date", endString)
         .not("fixed_expense_id", "is", null);
@@ -974,10 +1068,16 @@
         return;
       }
 
-      const existingIds = new Set((existingItems || []).map(item => item.fixed_expense_id));
-      const rowsToInsert = fixedItems
-        .filter(item => !existingIds.has(item.id))
-        .map(item => ({
+      const existingMap = {};
+      (existingItems || []).forEach(item => {
+        existingMap[item.fixed_expense_id] = item.id;
+      });
+
+      let insertRows = [];
+      let updateCount = 0;
+
+      for (const item of fixedItems) {
+        const payload = {
           date: getDateStringFromMonthAndDay(year, month, item.day),
           amount: Number(item.amount || 0),
           payment_method: item.payment_method || "현금",
@@ -985,25 +1085,39 @@
           person: item.person || "기타",
           memo: item.memo ? `${item.name} / ${item.memo}` : item.name,
           fixed_expense_id: item.id
-        }));
+        };
 
-      if (rowsToInsert.length === 0) {
-        alert(`${monthValue}에는 이미 모두 불러왔습니다.`);
-        return;
+        if (existingMap[item.id]) {
+          const { error: updateError } = await supabaseClient
+            .from("expenses")
+            .update(payload)
+            .eq("id", existingMap[item.id]);
+
+          if (updateError) {
+            alert("고정지출 업데이트 실패: " + updateError.message);
+            return;
+          }
+          updateCount++;
+        } else {
+          insertRows.push(payload);
+        }
       }
 
-      const { error } = await supabaseClient
-        .from("expenses")
-        .insert(rowsToInsert);
+      if (insertRows.length > 0) {
+        const { error: insertError } = await supabaseClient
+          .from("expenses")
+          .insert(insertRows);
 
-      if (error) {
-        alert("고정지출 불러오기 실패: " + error.message);
-      } else {
-        alert(`${rowsToInsert.length}건 불러왔습니다.`);
-        await loadExpenses();
-        await loadCalendar();
-        await loadSettlementSummary();
+        if (insertError) {
+          alert("고정지출 불러오기 실패: " + insertError.message);
+          return;
+        }
       }
+
+      alert(`${monthValue}에 신규 ${insertRows.length}건, 수정 ${updateCount}건 반영했어요.`);
+      await loadExpenses();
+      await loadCalendar();
+      await loadSettlementSummary();
     }
 
     async function loadCalendar() {
@@ -1196,7 +1310,11 @@
           <strong class="summary-strong">${formatMoney(finalLivingPool)}</strong>
         </div>
 
-        <div class="line"><strong>참고: 전체 지출까지 반영한 순잔액</strong><br><span class="muted">총수입 - 전체 지출</span><br>${formatMoney(afterAllExpense)}</div>
+        <div class="line">
+          <strong>참고: 전체 지출까지 반영한 순잔액</strong><br>
+          <span class="muted">총수입 - 전체 지출</span><br>
+          ${formatMoney(afterAllExpense)}
+        </div>
 
         <div class="line"><strong>참고용 사람별 지출</strong><br>
           <span class="muted">
@@ -1227,6 +1345,7 @@
     setDefaultDates();
     updateSelectedMonthLabel();
     setMode("record");
+
     loadSettings().then(async () => {
       await loadExpenses();
       await loadIncome();
