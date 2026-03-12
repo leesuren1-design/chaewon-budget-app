@@ -595,39 +595,42 @@
     </div>
   </div>
 
-<div class="card">
-  <h3>🍳 요리 레시피</h3>
 <div id="recipeSection" class="hidden">
-  <div class="row">
-    <input id="recipeTitle" placeholder="요리 제목" />
-    <select id="recipeCategory" style="max-width:220px;">
-      <option value="국">국</option>
-      <option value="반찬">반찬</option>
-      <option value="메인요리">메인요리</option>
-      <option value="기타">기타</option>
-      <option value="볶음">볶음</option>
-      <option value="찌개">찌개</option>
-      <option value="면">면</option>
-      <option value="아이반찬">아이반찬</option>
-      <option value="냉장고털이">냉장고털이</option>
-    </select>
+
+  <div class="card">
+    <h3>🍳 요리 레시피</h3>
+
+    <div class="row">
+      <input id="recipeTitle" placeholder="요리 제목" />
+      <select id="recipeCategory" style="max-width:220px;">
+        <option value="국">국</option>
+        <option value="반찬">반찬</option>
+        <option value="메인요리">메인요리</option>
+        <option value="기타">기타</option>
+        <option value="볶음">볶음</option>
+        <option value="찌개">찌개</option>
+        <option value="면">면</option>
+        <option value="아이반찬">아이반찬</option>
+        <option value="냉장고털이">냉장고털이</option>
+      </select>
+    </div>
+
+    <br />
+
+    <textarea id="recipeMemo"
+      placeholder="재료 / 조리법 / 유튜브 링크 / 메모"
+      style="width:100%; min-height:180px; padding:12px; border:1px solid #eadbe1; border-radius:12px; box-sizing:border-box;"></textarea>
+
+    <br /><br />
+    <button class="primary-btn" onclick="saveRecipe()">등록하기</button>
   </div>
 
-  <br />
+  <div class="card">
+    <h3>📖 레시피 목록</h3>
+    <div id="recipeList">불러오는 중...</div>
+  </div>
 
-  <textarea id="recipeMemo"
-    placeholder="재료 / 조리법 / 유튜브 링크 / 메모"
-    style="width:100%; min-height:180px; padding:12px; border:1px solid #eadbe1; border-radius:12px; box-sizing:border-box;"></textarea>
-
-  <br /><br />
-  <button class="primary-btn" onclick="saveRecipe()">등록하기</button>
 </div>
-
-<div class="card">
-  <h3>📖 레시피 목록</h3>
-  <div id="recipeList">불러오는 중...</div>
-</div>
-
   
   <div id="settlementSection" class="hidden">
     <div class="card">
