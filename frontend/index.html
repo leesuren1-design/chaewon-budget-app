@@ -855,45 +855,43 @@ function setMode(mode) {
       if ((item.payment_method || "") !== "카드") return "";
       return item.card_name || "기타카드";
     }
+function renderExpenseTabs() {
+  const cardMap = expenseTabData.cardByPerson[currentCardTab] || {};
+  const cashMap = expenseTabData.cashByPerson[currentCashTab] || {};
 
-    function renderExpenseTabs() {
-      const cardMap = expenseTabData.cardByPerson[currentCardTab] || {};
-      const cashMap = expenseTabData.cashByPerson[currentCashTab] || {};
+  const cardHtml = Object.keys(cardMap).length
+    ? Object.entries(cardMap).map(([k, v]) => `${k} ₩${v.toLocaleString()}`).join("<br>")
+    : `${currentCardTab} 카드 내역 없음`;
 
-      const cardHtml = Object.keys(cardMap).length
-        ? Object.entries(cardMap).map(([k, v]) => `${k} ₩${v.toLocaleString()}`).join("<br>")
-        : `${currentCardTab} 카드 내역 없음`;
+  const cashHtml = Object.keys(cashMap).length
+    ? Object.entries(cashMap).map(([k, v]) => `${k} ₩${v.toLocaleString()}`).join("<br>")
+    : `${currentCashTab} 현금/이체 내역 없음`;
 
-      const cashHtml = Object.keys(cashMap).length
-        ? Object.entries(cashMap).map(([k, v]) => `${k} ₩${v.toLocaleString()}`).join("<br>")
-        : `${currentCashTab} 현금/이체 내역 없음`;
+  document.getElementById("cardBreakdown").innerHTML = cardHtml;
+  document.getElementById("cashBreakdown").innerHTML = cashHtml;
 
-      document.getElementById("cardBreakdown").innerHTML = cardHtml;
-      document.getElementById("cashBreakdown").innerHTML = cashHtml;
+  const currentCardAmount = expenseTabData.cardPersonTotal[currentCardTab] || 0;
+  const currentCashAmount = expenseTabData.cashPersonTotal[currentCashTab] || 0;
 
-      document.getElementById("cardPersonTotal").innerText =
-        `${currentCardTab} 카드 합계: ${formatMoney(expenseTabData.cardPersonTotal[currentCardTab] || 0)}`;
-      document.getElementById("cashPersonTotal").innerText =
-        `${currentCashTab} 현금/이체 합계: ${formatMoney(expenseTabData.cashPersonTotal[currentCashTab] || 0)}`;
+  document.getElementById("cardExpense").innerText = formatMoney(currentCardAmount);
+  document.getElementById("cashExpense").innerText = formatMoney(currentCashAmount);
 
-      document.getElementById("cardTotalBottom").innerText = formatMoney(expenseTabData.cardTotal || 0);
-      document.getElementById("cashTotalBottom").innerText = formatMoney(expenseTabData.cashTotal || 0);
+  document.getElementById("cardPersonTotal").innerText =
+    `${currentCardTab} 카드 합계: ${formatMoney(currentCardAmount)}`;
+  document.getElementById("cashPersonTotal").innerText =
+    `${currentCashTab} 현금/이체 합계: ${formatMoney(currentCashAmount)}`;
 
-      document.getElementById("cardTabHun").classList.toggle("active", currentCardTab === "훈");
-      document.getElementById("cardTabJju").classList.toggle("active", currentCardTab === "쭈");
-      document.getElementById("cashTabHun").classList.toggle("active", currentCashTab === "훈");
-      document.getElementById("cashTabJju").classList.toggle("active", currentCashTab === "쭈");
-    }
+  document.getElementById("cardTotalBottom").innerText =
+    `전체 카드 총합: ${formatMoney(expenseTabData.cardTotal || 0)}`;
+  document.getElementById("cashTotalBottom").innerText =
+    `전체 현금/이체 총합: ${formatMoney(expenseTabData.cashTotal || 0)}`;
 
-    function setExpenseTab(type, person) {
-      if (type === "card") {
-        currentCardTab = person;
-      } else {
-        currentCashTab = person;
-      }
-      renderExpenseTabs();
-    }
-
+  document.getElementById("cardTabHun").classList.toggle("active", currentCardTab === "훈");
+  document.getElementById("cardTabJju").classList.toggle("active", currentCardTab === "쭈");
+  document.getElementById("cashTabHun").classList.toggle("active", currentCashTab === "훈");
+  document.getElementById("cashTabJju").classList.toggle("active", currentCashTab === "쭈");
+}
+   
     async function loadSettings() {
       const { data, error } = await supabaseClient
         .from("app_settings")
