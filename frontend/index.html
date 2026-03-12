@@ -891,7 +891,17 @@ function renderExpenseTabs() {
   document.getElementById("cashTabHun").classList.toggle("active", currentCashTab === "훈");
   document.getElementById("cashTabJju").classList.toggle("active", currentCashTab === "쭈");
 }
-   
+
+function setExpenseTab(type, person) {
+  if (type === "card") {
+    currentCardTab = person;
+  } else {
+    currentCashTab = person;
+  }
+
+  renderExpenseTabs();
+}
+    
     async function loadSettings() {
       const { data, error } = await supabaseClient
         .from("app_settings")
