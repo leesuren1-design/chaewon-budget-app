@@ -460,7 +460,7 @@
         </div>
 
         <div class="card soft-card">
-          <h3>👨‍👩‍👧‍사람별 지출 합계</h3>
+          <h3>💳결제자별 지출 합계</h3>
           <div id="personSummary">불러오는 중...</div>
         </div>
       </div>
@@ -1099,13 +1099,13 @@ async function loadExpenses() {
   document.getElementById("fixedExpenseBreakdown").innerText =
     `카드 ₩${fixedCardExpenseTotal.toLocaleString()} / 현금·이체 ₩${fixedCashExpenseTotal.toLocaleString()}`;
 
-  document.getElementById("personSummary").innerHTML = `
-    <div class="line">훈 사용: ₩ ${personTotals["훈"].toLocaleString()}</div>
-    <div class="line">쭈 사용: ₩ ${personTotals["쭈"].toLocaleString()}</div>
-    <div class="line">채원 사용: ₩ ${personTotals["채원"].toLocaleString()}</div>
-    <div class="line">나은 사용: ₩ ${personTotals["나은"].toLocaleString()}</div>
-    <div style="padding-top:10px;">기타 사용: ₩ ${personTotals["기타"].toLocaleString()}</div>
-  `;
+document.getElementById("personSummary").innerHTML = `
+  <div class="line">훈 카드결제: ₩ ${payerBreakdown["훈카드"].toLocaleString()}</div>
+  <div class="line">훈 현금/이체: ₩ ${payerBreakdown["훈현금"].toLocaleString()}</div>
+  <div class="line">쭈 카드결제: ₩ ${payerBreakdown["쭈카드"].toLocaleString()}</div>
+  <div class="line">쭈 현금/이체: ₩ ${payerBreakdown["쭈현금"].toLocaleString()}</div>
+  <div style="padding-top:10px;">총 지출: ₩ ${total.toLocaleString()}</div>
+`;
 
   renderExpenseTabs();
   updateRemaining();
@@ -1690,144 +1690,127 @@ async function loadExpenses() {
       html += `</div>`;
       document.getElementById("monthCalendar").innerHTML = html;
     }
+async function loadSettlementSummary() {
+  const { startString, endString, monthValue } = getSettlementRange();
 
-    async function loadSettlementSummary() {
-      const { startString, endString, monthValue } = getSettlementRange();
+  document.getElementById("settlementRangeLabel").innerText =
+    `${monthValue} 정산기간: ${startString} ~ ${endString} (기준일 ${currentSettlementDay}일)`;
 
-      document.getElementById("settlementRangeLabel").innerText =
-        `${monthValue} 정산기간: ${startString} ~ ${endString} (기준일 ${currentSettlementDay}일)`;
+  const incomeResult = await supabaseClient
+    .from("income")
+    .select("*")
+    .gte("date", startString)
+    .lte("date", endString);
 
-      const incomeResult = await supabaseClient
-        .from("income")
-        .select("*")
-        .gte("date", startString)
-        .lte("date", endString);
+  const expenseResult = await supabaseClient
+    .from("expenses")
+    .select("*")
+    .gte("date", startString)
+    .lte("date", endString);
 
-      const expenseResult = await supabaseClient
-        .from("expenses")
-        .select("*")
-        .gte("date", startString)
-        .lte("date", endString);
+  if (incomeResult.error || expenseResult.error) {
+    document.getElementById("settlementSummary").innerHTML = "정산 불러오기 실패";
+    document.getElementById("settlementCardBreakdown").innerHTML = "정산 불러오기 실패";
+    return;
+  }
 
-      if (incomeResult.error || expenseResult.error) {
-        document.getElementById("settlementSummary").innerHTML = "정산 불러오기 실패";
-        document.getElementById("settlementCardBreakdown").innerHTML = "정산 불러오기 실패";
-        return;
-      }
+  const incomes = incomeResult.data || [];
+  const expenses = expenseResult.data || [];
 
-      const incomes = incomeResult.data || [];
-      const expenses = expenseResult.data || [];
+  let hunIncome = 0;
+  let jjuIncome = 0;
+  let otherIncome = 0;
 
-      let hunIncome = 0;
-      let jjuIncome = 0;
-      let otherIncome = 0;
+  incomes.forEach(item => {
+    const amt = Number(item.amount || 0);
+    if (item.person === "훈") hunIncome += amt;
+    else if (item.person === "쭈") jjuIncome += amt;
+    else otherIncome += amt;
+  });
 
-      incomes.forEach(item => {
-        const amt = Number(item.amount || 0);
-        if (item.person === "훈") hunIncome += amt;
-        else if (item.person === "쭈") jjuIncome += amt;
-        else otherIncome += amt;
-      });
+  let fixedCashTotal = 0;
+  let fixedCardTotal = 0;
+  let totalCard = 0;
+  let totalExpense = 0;
 
-      let fixedCashTotal = 0;
-      let fixedCardTotal = 0;
-      let totalCard = 0;
-      let totalExpense = 0;
+  let hunCash = 0;
+  let hunCard = 0;
+  let jjuCash = 0;
+  let jjuCard = 0;
 
-      let hunCash = 0;
-      let hunCard = 0;
-      let jjuCash = 0;
-      let jjuCard = 0;
+  const settlementCardMap = {};
 
-      const settlementCardMap = {};
+  expenses.forEach(item => {
+    const amt = Number(item.amount || 0);
+    const payment = item.payment_method || "현금";
+    const payerType = item.payer_type || "";
+    const isFixed = item.fixed_expense_id !== null && item.fixed_expense_id !== undefined;
 
-      expenses.forEach(item => {
-        const amt = Number(item.amount || 0);
-        const payment = item.payment_method || "현금";
-        const person = item.person || "기타";
-        const isFixed = item.fixed_expense_id !== null && item.fixed_expense_id !== undefined;
+    totalExpense += amt;
 
-        totalExpense += amt;
+    if (payment === "카드") {
+      totalCard += amt;
 
-        if (payment === "카드") {
-          totalCard += amt;
+      const cardName = item.card_name || "기타카드";
+      settlementCardMap[cardName] = (settlementCardMap[cardName] || 0) + amt;
 
-          const cardName = item.card_name || "기타카드";
-          settlementCardMap[cardName] = (settlementCardMap[cardName] || 0) + amt;
-
-          if (isFixed) fixedCardTotal += amt;
-        } else {
-          if (isFixed) fixedCashTotal += amt;
-        }
-
-        if (person === "훈") {
-          if (payment === "카드") hunCard += amt;
-          else hunCash += amt;
-        }
-
-        if (person === "쭈") {
-          if (payment === "카드") jjuCard += amt;
-          else jjuCash += amt;
-        }
-      });
-
-      const totalIncome = hunIncome + jjuIncome + otherIncome;
-      const hunBaseBurden = fixedCashTotal + totalCard;
-      const hunActualPay = Math.min(hunIncome, hunBaseBurden);
-      const hunShortage = Math.max(0, hunBaseBurden - hunIncome);
-      const jjuSupport = hunShortage;
-      const finalLivingPool = totalIncome - hunBaseBurden;
-      const afterAllExpense = totalIncome - totalExpense;
-
-      document.getElementById("settlementTotalIncome").innerText = formatMoney(totalIncome);
-      document.getElementById("settlementHunBaseBurden").innerText = formatMoney(hunBaseBurden);
-      document.getElementById("settlementHunShortage").innerText = formatMoney(hunShortage);
-      document.getElementById("settlementJjuSupport").innerText = formatMoney(jjuSupport);
-
-      document.getElementById("settlementSummary").innerHTML = `
-        <div class="line"><strong>훈 수입:</strong> ${formatMoney(hunIncome)}</div>
-        <div class="line"><strong>쭈 수입:</strong> ${formatMoney(jjuIncome)}</div>
-        <div class="line"><strong>기타 수입:</strong> ${formatMoney(otherIncome)}</div>
-        <div class="line"><strong>총 수입:</strong> ${formatMoney(totalIncome)}</div>
-
-        <div class="line"><strong>고정지출 현금/계좌이체 총액:</strong> ${formatMoney(fixedCashTotal)}</div>
-        <div class="line"><strong>고정지출 카드 총액:</strong> ${formatMoney(fixedCardTotal)}</div>
-        <div class="line"><strong class="red-text">이번달 지출:</strong> ${formatMoney(hunBaseBurden)}</div>
-
-        <div class="line"><strong>훈 실제 부담 가능 금액:</strong> ${formatMoney(hunActualPay)}</div>
-        <div class="line"><strong class="blue-text">훈 수입 부족분:</strong> ${formatMoney(hunShortage)}</div>
-        <div class="line"><strong>수련 병훈 계좌이체 금액:</strong> ${formatMoney(jjuSupport)}</div>
-
-        <div class="line">
-          <strong>최종 생활비</strong><br>
-          <span class="muted">총수입 - 이번달 지출</span><br>
-          ${formatMoney(finalLivingPool)}
-        </div>
-
-        <div class="line">
-          <strong>참고: 전체 지출까지 반영한 순잔액</strong><br>
-          <span class="muted">총수입 - 전체 지출</span><br>
-          ${formatMoney(afterAllExpense)}
-        </div>
-
-        <div class="line"><strong>참고용 사람별 지출</strong><br>
-          <span class="muted">
-            훈 현금/계좌이체 ${formatMoney(hunCash)} / 훈 카드 ${formatMoney(hunCard)}<br>
-            쭈 현금/계좌이체 ${formatMoney(jjuCash)} / 쭈 카드 ${formatMoney(jjuCard)}
-          </span>
-        </div>
-      `;
-
-      const cardBreakdownHtml = Object.keys(settlementCardMap).length
-        ? Object.entries(settlementCardMap)
-            .sort((a, b) => b[1] - a[1])
-            .map(([cardName, amt]) => `<div class="line"><strong>${cardName}</strong> ${formatMoney(amt)}</div>`)
-            .join("")
-        : "해당 기간 카드내역이 없습니다.";
-
-      document.getElementById("settlementCardBreakdown").innerHTML = cardBreakdownHtml;
+      if (isFixed) fixedCardTotal += amt;
+    } else {
+      if (isFixed) fixedCashTotal += amt;
     }
 
+    if (payerType === "훈카드") hunCard += amt;
+    if (payerType === "훈현금") hunCash += amt;
+    if (payerType === "쭈카드") jjuCard += amt;
+    if (payerType === "쭈현금") jjuCash += amt;
+  });
+
+  const totalIncome = hunIncome + jjuIncome + otherIncome;
+  const hunBaseBurden = fixedCashTotal + totalCard;
+  const hunActualPay = Math.min(hunIncome, hunBaseBurden);
+  const hunShortage = Math.max(0, hunBaseBurden - hunIncome);
+  const jjuSupport = hunShortage;
+  const finalLivingPool = totalIncome - hunBaseBurden;
+  const afterAllExpense = totalIncome - totalExpense;
+
+  document.getElementById("settlementTotalIncome").innerText = formatMoney(totalIncome);
+  document.getElementById("settlementHunBaseBurden").innerText = formatMoney(hunBaseBurden);
+  document.getElementById("settlementHunShortage").innerText = formatMoney(hunShortage);
+  document.getElementById("settlementJjuSupport").innerText = formatMoney(jjuSupport);
+
+  document.getElementById("settlementSummary").innerHTML = `
+    <div class="line"><strong>훈 수입:</strong> ${formatMoney(hunIncome)}</div>
+    <div class="line"><strong>쭈 수입:</strong> ${formatMoney(jjuIncome)}</div>
+    <div class="line"><strong>기타 수입:</strong> ${formatMoney(otherIncome)}</div>
+    <div class="line"><strong>총 수입:</strong> ${formatMoney(totalIncome)}</div>
+
+    <div class="line"><strong>고정지출 현금/계좌이체 총액:</strong> ${formatMoney(fixedCashTotal)}</div>
+    <div class="line"><strong>고정지출 카드 총액:</strong> ${formatMoney(fixedCardTotal)}</div>
+    <div class="line"><strong class="red-text">이번달 지출:</strong> ${formatMoney(hunBaseBurden)}</div>
+
+    <div class="line"><strong>훈 실제 부담 가능 금액:</strong> ${formatMoney(hunActualPay)}</div>
+    <div class="line"><strong class="blue-text">훈 수입 부족분:</strong> ${formatMoney(hunShortage)}</div>
+    <div class="line"><strong>수련 병훈 계좌이체 금액:</strong> ${formatMoney(jjuSupport)}</div>
+
+    <div class="line">
+      <strong>결제 기준 참고용 합계</strong><br>
+      <span class="muted">
+        훈 현금/계좌이체 ${formatMoney(hunCash)} / 훈 카드 ${formatMoney(hunCard)}<br>
+        쭈 현금/계좌이체 ${formatMoney(jjuCash)} / 쭈 카드 ${formatMoney(jjuCard)}
+      </span>
+    </div>
+  `;
+
+  const cardBreakdownHtml = Object.keys(settlementCardMap).length
+    ? Object.entries(settlementCardMap)
+        .sort((a, b) => b[1] - a[1])
+        .map(([cardName, amt]) => `<div class="line"><strong>${cardName}</strong> ${formatMoney(amt)}</div>`)
+        .join("")
+    : "해당 기간 카드내역이 없습니다.";
+
+  document.getElementById("settlementCardBreakdown").innerHTML = cardBreakdownHtml;
+}
+   
     async function saveMonthlySettlement() {
       const { startString, endString, monthValue } = getSettlementRange();
 
