@@ -382,6 +382,7 @@
     <div class="row">
       <button id="recordModeBtn" class="mode-btn active" onclick="setMode('record')">📝기록용 가계부</button>
       <button id="settlementModeBtn" class="mode-btn" onclick="setMode('settlement')">📊정산 보기</button>
+      <button id="recipeModeBtn" class="mode-btn" onclick="setMode('recipe')">🍳레시피</button>
     </div>
   </div>
 
@@ -596,7 +597,7 @@
 
 <div class="card">
   <h3>🍳 요리 레시피</h3>
-
+<div id="recipeSection" class="hidden">
   <div class="row">
     <input id="recipeTitle" placeholder="요리 제목" />
     <select id="recipeCategory" style="max-width:220px;">
@@ -779,25 +780,40 @@ let recipeData = [];
       document.getElementById("remainingMoney").innerText = "₩ " + remain.toLocaleString();
     }
 
-    function setMode(mode) {
-      currentMode = mode;
-      const recordSection = document.getElementById("recordSection");
-      const settlementSection = document.getElementById("settlementSection");
-      const recordBtn = document.getElementById("recordModeBtn");
-      const settlementBtn = document.getElementById("settlementModeBtn");
+function setMode(mode) {
+  currentMode = mode;
 
-      if (mode === "record") {
-        recordSection.classList.remove("hidden");
-        settlementSection.classList.add("hidden");
-        recordBtn.classList.add("active");
-        settlementBtn.classList.remove("active");
-      } else {
-        recordSection.classList.add("hidden");
-        settlementSection.classList.remove("hidden");
-        recordBtn.classList.remove("active");
-        settlementBtn.classList.add("active");
-      }
-    }
+  const recordSection = document.getElementById("recordSection");
+  const settlementSection = document.getElementById("settlementSection");
+  const recipeSection = document.getElementById("recipeSection");
+
+  const recordBtn = document.getElementById("recordModeBtn");
+  const settlementBtn = document.getElementById("settlementModeBtn");
+  const recipeBtn = document.getElementById("recipeModeBtn");
+
+  recordSection.classList.add("hidden");
+  settlementSection.classList.add("hidden");
+  recipeSection.classList.add("hidden");
+
+  recordBtn.classList.remove("active");
+  settlementBtn.classList.remove("active");
+  recipeBtn.classList.remove("active");
+
+  if (mode === "record") {
+    recordSection.classList.remove("hidden");
+    recordBtn.classList.add("active");
+  }
+
+  if (mode === "settlement") {
+    settlementSection.classList.remove("hidden");
+    settlementBtn.classList.add("active");
+  }
+
+  if (mode === "recipe") {
+    recipeSection.classList.remove("hidden");
+    recipeBtn.classList.add("active");
+  }
+}
 
     function getRecordModeCardName(item) {
       if ((item.payment_method || "") !== "카드") return "";
