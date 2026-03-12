@@ -352,7 +352,20 @@
       <div id="settlementRangeLabel" class="sub">정산기간 불러오는 중...</div>
       <div id="settlementSummary">불러오는 중...</div>
     </div>
+<div class="card">
+  <h3>월 마감</h3>
+  <div class="row">
+    <button class="primary-btn" onclick="saveMonthlySettlement()">이번 달 정산 마감 저장</button>
+    <button onclick="loadMonthlySettlement()">저장된 마감 불러오기</button>
+  </div>
+  <div class="sub" id="monthlySettlementStatus">아직 마감된 정산이 없습니다.</div>
+</div>
 
+<div class="card">
+  <h3>저장된 월 마감 결과</h3>
+  <div id="savedSettlementSummary">불러오는 중...</div>
+</div>
+    
     <div class="card">
       <h3>정산기간 카드별 합계</h3>
       <div id="settlementCardBreakdown">불러오는 중...</div>
@@ -672,6 +685,179 @@
       }
     }
 
+function getCurrentSettlementSnapshot() {
+  const { startString, endString, monthValue } = getSettlementRange();
+
+  const summaryEl = document.getElementById("settlementSummary");
+  const cardBreakdownEl = document.getElementById("settlementCardBreakdown");
+
+  return {
+    monthKey: monthValue,
+    settlementStart: startString,
+    settlementEnd: endString,
+    settlementDay: Number(currentSettlementDay || 25),
+    summaryHtml: summaryEl ? summaryEl.innerHTML : "",
+    cardBreakdownHtml: cardBreakdownEl ? cardBreakdownEl.innerHTML : ""
+  };
+}
+
+async function saveMonthlySettlement() {
+  const { startString, endString, monthValue } = getSettlementRange();
+
+  const incomeResult = await supabaseClient
+    .from("income")
+    .select("*")
+    .gte("date", startString)
+    .lte("date", endString);
+
+  const expenseResult = await supabaseClient
+    .from("expenses")
+    .select("*")
+    .gte("date", startString)
+    .lte("date", endString);
+
+  if (incomeResult.error || expenseResult.error) {
+    alert("마감 저장용 데이터 불러오기 실패");
+    return;
+  }
+
+  const incomes = incomeResult.data || [];
+  const expenses = expenseResult.data || [];
+
+  let hunIncome = 0;
+  let jjuIncome = 0;
+  let otherIncome = 0;
+
+  incomes.forEach(item => {
+    const amt = Number(item.amount || 0);
+    if (item.person === "훈") hunIncome += amt;
+    else if (item.person === "쭈") jjuIncome += amt;
+    else otherIncome += amt;
+  });
+
+  let fixedCashTotal = 0;
+  let fixedCardTotal = 0;
+  let totalCard = 0;
+  let totalExpense = 0;
+  const settlementCardMap = {};
+
+  expenses.forEach(item => {
+    const amt = Number(item.amount || 0);
+    const payment = item.payment_method || "현금";
+    const isFixed = item.fixed_expense_id !== null && item.fixed_expense_id !== undefined;
+
+    totalExpense += amt;
+
+    if (payment === "카드") {
+      totalCard += amt;
+      const cardName = item.card_name || "기타카드";
+      settlementCardMap[cardName] = (settlementCardMap[cardName] || 0) + amt;
+
+      if (isFixed) fixedCardTotal += amt;
+    } else {
+      if (isFixed) fixedCashTotal += amt;
+    }
+  });
+
+  const totalIncome = hunIncome + jjuIncome + otherIncome;
+  const hunBaseBurden = fixedCashTotal + totalCard;
+  const hunActualPay = Math.min(hunIncome, hunBaseBurden);
+  const hunShortage = Math.max(0, hunBaseBurden - hunIncome);
+  const jjuSupport = hunShortage;
+  const finalLivingPool = totalIncome - hunBaseBurden;
+  const afterAllExpense = totalIncome - totalExpense;
+
+  const payload = {
+    month_key: monthValue,
+    settlement_start: startString,
+    settlement_end: endString,
+    settlement_day: Number(currentSettlementDay || 25),
+    hun_income: hunIncome,
+    jju_income: jjuIncome,
+    other_income: otherIncome,
+    total_income: totalIncome,
+    fixed_cash_total: fixedCashTotal,
+    fixed_card_total: fixedCardTotal,
+    total_card: totalCard,
+    total_expense: totalExpense,
+    hun_actual_pay: hunActualPay,
+    hun_shortage: hunShortage,
+    jju_support: jjuSupport,
+    final_living_pool: finalLivingPool,
+    after_all_expense: afterAllExpense,
+    settlement_card_breakdown: settlementCardMap,
+    updated_at: new Date().toISOString()
+  };
+
+  const { error } = await supabaseClient
+    .from("monthly_settlements")
+    .upsert([payload], { onConflict: "month_key" });
+
+  if (error) {
+    alert("월 마감 저장 실패: " + error.message);
+    return;
+  }
+
+  document.getElementById("monthlySettlementStatus").innerText =
+    `${monthValue} 마감 저장 완료`;
+  await loadMonthlySettlement();
+  alert(`${monthValue} 정산을 마감 저장했어요.`);
+}
+
+async function loadMonthlySettlement() {
+  const { monthValue } = getSelectedMonthRange();
+
+  const { data, error } = await supabaseClient
+    .from("monthly_settlements")
+    .select("*")
+    .eq("month_key", monthValue)
+    .maybeSingle();
+
+  if (error) {
+    document.getElementById("savedSettlementSummary").innerHTML = "저장된 월 마감 불러오기 실패";
+    return;
+  }
+
+  if (!data) {
+    document.getElementById("monthlySettlementStatus").innerText =
+      `${monthValue}는 아직 마감 저장된 결과가 없습니다.`;
+    document.getElementById("savedSettlementSummary").innerHTML =
+      "저장된 월 마감 결과가 없습니다.";
+    return;
+  }
+
+  document.getElementById("monthlySettlementStatus").innerText =
+    `${monthValue} 마감 결과가 저장되어 있습니다.`;
+
+  const cardMap = data.settlement_card_breakdown || {};
+  const cardBreakdownHtml = Object.keys(cardMap).length
+    ? Object.entries(cardMap)
+        .sort((a, b) => b[1] - a[1])
+        .map(([cardName, amt]) => `<div class="line"><strong>${cardName}</strong> ${formatMoney(amt)}</div>`)
+        .join("")
+    : `<div class="line">카드 내역 없음</div>`;
+
+  document.getElementById("savedSettlementSummary").innerHTML = `
+    <div class="line"><strong>정산기간:</strong> ${data.settlement_start} ~ ${data.settlement_end}</div>
+    <div class="line"><strong>훈 수입:</strong> ${formatMoney(data.hun_income)}</div>
+    <div class="line"><strong>쭈 수입:</strong> ${formatMoney(data.jju_income)}</div>
+    <div class="line"><strong>기타 수입:</strong> ${formatMoney(data.other_income)}</div>
+    <div class="line"><strong>총 수입:</strong> ${formatMoney(data.total_income)}</div>
+    <div class="line"><strong>고정지출 현금/계좌이체:</strong> ${formatMoney(data.fixed_cash_total)}</div>
+    <div class="line"><strong>고정지출 카드:</strong> ${formatMoney(data.fixed_card_total)}</div>
+    <div class="line"><strong>정산기간 카드값 총액:</strong> ${formatMoney(data.total_card)}</div>
+    <div class="line"><strong>훈 실제 부담 가능 금액:</strong> ${formatMoney(data.hun_actual_pay)}</div>
+    <div class="line"><strong>훈 부족분:</strong> ${formatMoney(data.hun_shortage)}</div>
+    <div class="line"><strong>쭈가 메운 금액:</strong> ${formatMoney(data.jju_support)}</div>
+    <div class="line"><strong class="pink-strong">최종 생활비:</strong> ${formatMoney(data.final_living_pool)}</div>
+    <div class="line"><strong>전체 지출 반영 순잔액:</strong> ${formatMoney(data.after_all_expense)}</div>
+    <div class="line">
+      <strong>저장된 카드별 합계</strong>
+      <div class="sub">${cardBreakdownHtml}</div>
+    </div>
+  `;
+}
+    
     async function deleteExpense(id) {
       const ok = confirm("삭제할까요?");
       if (!ok) return;
@@ -1349,25 +1535,29 @@ setTimeout(() => {
       document.getElementById("settlementCardBreakdown").innerHTML = cardBreakdownHtml;
     }
 
-    async function applySelectedMonth() {
-      updateSelectedMonthLabel();
-      await loadExpenses();
-      await loadIncome();
-      await loadCalendar();
-      await loadSettlementSummary();
-    }
+ async function applySelectedMonth() {
+  updateSelectedMonthLabel();
+  await loadExpenses();
+  await loadIncome();
+  await loadCalendar();
+  await loadSettlementSummary();
+  await loadMonthlySettlement();
+}
 
+
+    
     setDefaultDates();
     updateSelectedMonthLabel();
     setMode("record");
 
-    loadSettings().then(async () => {
-      await loadExpenses();
-      await loadIncome();
-      await loadFixedExpenses();
-      await loadCalendar();
-      await loadSettlementSummary();
-    });
+loadSettings().then(async () => {
+  await loadExpenses();
+  await loadIncome();
+  await loadFixedExpenses();
+  await loadCalendar();
+  await loadSettlementSummary();
+  await loadMonthlySettlement();
+});
   </script>
 </body>
 </html>
