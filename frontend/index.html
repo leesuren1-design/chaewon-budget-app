@@ -633,7 +633,7 @@
       style="width:100%; min-height:180px; padding:12px; border:1px solid #eadbe1; border-radius:12px; box-sizing:border-box;"></textarea>
 
     <br /><br />
-    <button class="primary-btn" onclick="saveRecipe()">등록하기</button>
+<button id="recipeSaveBtn" class="primary-btn" onclick="saveRecipe()">등록하기</button>
   </div>
 
   <div class="card">
@@ -1995,15 +1995,16 @@ function setMode(mode) {
     updateSelectedMonthLabel();
     setMode("record");
 
-    loadSettings().then(async () => {
-      await loadExpenses();
-      await loadIncome();
-      await loadFixedExpenses();
-      await loadCalendar();
-      await loadSettlementSummary();
-      await loadMonthlySettlement();
-      await loadRecipes();
-    });
+   loadSettings().then(async () => {
+  await loadExpenses();
+  await loadIncome();
+  await loadFixedExpenses();
+  await loadCalendar();
+  await loadSettlementSummary();
+  await loadMonthlySettlement();
+  await loadRecipes();
+});
+
 async function saveRecipe() {
   const title = document.getElementById("recipeTitle").value.trim();
   const memo = document.getElementById("recipeMemo").value.trim();
@@ -2038,6 +2039,11 @@ async function saveRecipe() {
   document.getElementById("recipeMemo").value = "";
   document.getElementById("recipeCategory").value = "국";
 
+  const saveBtn = document.getElementById("recipeSaveBtn");
+  if (saveBtn) {
+    saveBtn.innerText = "등록하기";
+  }
+
   await loadRecipes();
 }
 
@@ -2054,7 +2060,118 @@ function setRecipeTab(tab, el) {
 
   renderRecipes();
 }
-    
+
+async function loadRecipes() {
+  const { data, error } = await supabaseClient
+    .from("recipes")
+    .select("*")
+    .order("id", { ascending: false });
+
+  if (error) {
+    document.getElementById("recipeList").innerHTML = "불러오기 실패";
+    return;
+  }
+
+  recipeData = data || [];
+  renderRecipes();
+}
+
+function renderRecipes() {
+  const wrap = document.getElementById("recipeList");
+  if (!wrap) return;
+
+  let filtered = [...recipeData];
+
+  const keyword = (document.getElementById("recipeSearch")?.value || "").toLowerCase().trim();
+
+  if (currentRecipeTab !== "전체") {
+    filtered = filtered.filter(item =>
+      (item.category || "기타") === currentRecipeTab
+    );
+  }
+
+  if (keyword) {
+    filtered = filtered.filter(item =>
+      (item.title || "").toLowerCase().includes(keyword) ||
+      (item.memo || "").toLowerCase().includes(keyword)
+    );
+  }
+
+  if (!filtered.length) {
+    wrap.innerHTML = "레시피 없음";
+    return;
+  }
+
+  wrap.innerHTML = filtered.map(item => `
+    <div class="card soft-card" style="margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+        <div>
+          <h3 style="margin-bottom:6px;">🍽 ${item.title || ""}</h3>
+          <div class="sub" style="margin-top:0;">
+            <span style="
+              display:inline-block;
+              padding:4px 10px;
+              border-radius:999px;
+              background:#fff1f6;
+              color:#c2577a;
+              font-weight:700;
+              font-size:12px;
+            ">
+              ${item.category || "기타"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sub" style="margin-top:14px; white-space:pre-line;">
+        ${(item.memo || "").replace(
+          /(https?:\/\/[^\s]+)/g,
+          '<a href="$1" target="_blank" rel="noopener noreferrer">▶ 영상보기</a>'
+        )}
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:14px;">
+        <button class="small-btn" onclick="editRecipe(${item.id})">수정</button>
+        <button class="small-btn danger-btn" onclick="deleteRecipe(${item.id})">삭제</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+async function deleteRecipe(id) {
+  const ok = confirm("이 레시피를 삭제할까요?");
+  if (!ok) return;
+
+  const { error } = await supabaseClient
+    .from("recipes")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert("삭제 실패: " + error.message);
+    return;
+  }
+
+  await loadRecipes();
+}
+
+function editRecipe(id) {
+  const item = recipeData.find(r => r.id === id);
+  if (!item) return;
+
+  document.getElementById("recipeTitle").value = item.title || "";
+  document.getElementById("recipeMemo").value = item.memo || "";
+  document.getElementById("recipeCategory").value = item.category || "기타";
+
+  window.editingRecipeId = id;
+
+  const saveBtn = document.getElementById("recipeSaveBtn");
+  if (saveBtn) {
+    saveBtn.innerText = "수정 저장";
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
   </script>
 </body>
 </html>
