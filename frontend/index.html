@@ -265,8 +265,8 @@
       <button class="primary-btn" onclick="saveIncome()">수입 저장</button>
     </div>
 
-    <div class="card">
-      <h3>고정지출 관리</h3>
+    <div class="card" id="fixedExpenseFormCard">
+  <h3>고정지출 관리</h3>
 
       <input type="hidden" id="fixedId" />
 
@@ -853,7 +853,16 @@
       document.getElementById("fixedMemo").value = item.memo || "";
       document.getElementById("fixedActive").checked = !!item.is_active;
 
-      window.scrollTo({ top: 0, behavior: "smooth" });
+
+const formCard = document.getElementById("fixedExpenseFormCard");
+if (formCard) {
+  formCard.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+setTimeout(() => {
+  document.getElementById("fixedName").focus();
+}, 300);
+      
     }
 
     function resetFixedForm() {
