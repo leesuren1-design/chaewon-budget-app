@@ -142,6 +142,11 @@
       font-weight: 700;
       margin-bottom: 10px;
     }
+
+    .pink-strong {
+      color: #d94b7d;
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
@@ -185,6 +190,7 @@
       <div class="card">
         다음달 카드 결제 예상<br />
         <strong id="nextCardExpense" class="summary-strong">₩ 0</strong>
+        <div class="sub" id="nextCardExpenseRange">카드 기준일 반영</div>
       </div>
 
       <div class="card">
@@ -344,6 +350,11 @@
       <div id="settlementRangeLabel" class="sub">정산기간 불러오는 중...</div>
       <div id="settlementSummary">불러오는 중...</div>
     </div>
+
+    <div class="card">
+      <h3>정산기간 카드별 합계</h3>
+      <div id="settlementCardBreakdown">불러오는 중...</div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -365,6 +376,10 @@
       const y = now.getFullYear();
       const m = String(now.getMonth() + 1).padStart(2, "0");
       return `${y}-${m}`;
+    }
+
+    function formatMoney(value) {
+      return "₩ " + Number(value || 0).toLocaleString();
     }
 
     function getSelectedMonthRange() {
@@ -392,9 +407,15 @@
 
       return {
         monthValue,
+        startDate,
+        endDate,
         startString: startDate.toISOString().split("T")[0],
         endString: endDate.toISOString().split("T")[0]
       };
+    }
+
+    function getNextCardEstimateRange() {
+      return getSettlementRange();
     }
 
     function setDefaultDates() {
@@ -478,6 +499,7 @@
         alert("정산 기준일 저장 실패: " + error.message);
       } else {
         currentSettlementDay = value;
+        await loadExpenses();
         await loadSettlementSummary();
       }
     }
@@ -504,6 +526,7 @@
         document.getElementById("cardExpense").innerText = "₩ 0";
         document.getElementById("cashExpense").innerText = "₩ 0";
         document.getElementById("nextCardExpense").innerText = "₩ 0";
+        document.getElementById("nextCardExpenseRange").innerText = "카드 기준일 반영";
         document.getElementById("personSummary").innerHTML = "저장된 내역이 없습니다.";
         document.getElementById("expenseBreakdown").innerText = "훈카드 ₩0 / 훈현금 ₩0 / 쭈카드 ₩0 / 쭈현금 ₩0";
         document.getElementById("cardBreakdown").innerText = "카드별 내역 없음";
@@ -515,7 +538,6 @@
       let total = 0;
       let cardTotal = 0;
       let cashTotal = 0;
-      let nextCardTotal = 0;
 
       const personTotals = { "훈": 0, "쭈": 0, "채원": 0, "나은": 0, "기타": 0 };
       const payerBreakdown = { "훈카드": 0, "훈현금": 0, "쭈카드": 0, "쭈현금": 0 };
@@ -537,7 +559,6 @@
 
         if (payment === "카드") {
           cardTotal += amt;
-          nextCardTotal += amt;
 
           if (person === "훈") payerBreakdown["훈카드"] += amt;
           if (person === "쭈") payerBreakdown["쭈카드"] += amt;
@@ -567,6 +588,22 @@
         `;
       });
 
+      const settlementRange = getNextCardEstimateRange();
+
+      const { data: billingCardData, error: billingError } = await supabaseClient
+        .from("expenses")
+        .select("*")
+        .eq("payment_method", "카드")
+        .gte("date", settlementRange.startString)
+        .lte("date", settlementRange.endString);
+
+      let nextCardTotal = 0;
+      if (!billingError && billingCardData) {
+        billingCardData.forEach(item => {
+          nextCardTotal += Number(item.amount || 0);
+        });
+      }
+
       const cardBreakdownText = Object.keys(cardMap).length
         ? Object.entries(cardMap).map(([k, v]) => `${k} ₩${v.toLocaleString()}`).join("<br>")
         : "카드별 내역 없음";
@@ -580,6 +617,8 @@
       document.getElementById("cardExpense").innerText = "₩ " + cardTotal.toLocaleString();
       document.getElementById("cashExpense").innerText = "₩ " + cashTotal.toLocaleString();
       document.getElementById("nextCardExpense").innerText = "₩ " + nextCardTotal.toLocaleString();
+      document.getElementById("nextCardExpenseRange").innerText =
+        `${settlementRange.startString} ~ ${settlementRange.endString} 카드 사용분`;
 
       document.getElementById("expenseBreakdown").innerHTML =
         `훈카드 ₩${payerBreakdown["훈카드"].toLocaleString()} / 훈현금 ₩${payerBreakdown["훈현금"].toLocaleString()}<br>` +
@@ -1062,6 +1101,7 @@
 
       if (incomeResult.error || expenseResult.error) {
         document.getElementById("settlementSummary").innerHTML = "정산 불러오기 실패";
+        document.getElementById("settlementCardBreakdown").innerHTML = "정산 불러오기 실패";
         return;
       }
 
@@ -1089,6 +1129,8 @@
       let jjuCash = 0;
       let jjuCard = 0;
 
+      const settlementCardMap = {};
+
       expenses.forEach(item => {
         const amt = Number(item.amount || 0);
         const payment = item.payment_method || "현금";
@@ -1099,6 +1141,10 @@
 
         if (payment === "카드") {
           totalCard += amt;
+
+          const cardName = item.card_name || "기타카드";
+          settlementCardMap[cardName] = (settlementCardMap[cardName] || 0) + amt;
+
           if (isFixed) fixedCardTotal += amt;
         } else {
           if (isFixed) fixedCashTotal += amt;
@@ -1117,34 +1163,57 @@
 
       const totalIncome = hunIncome + jjuIncome + otherIncome;
 
-      const hunBurden = hunCash + hunCard;
-      const hunShortage = Math.max(0, hunBurden - hunIncome);
+      const hunBaseBurden = fixedCashTotal + totalCard;
+      const hunActualPay = Math.min(hunIncome, hunBaseBurden);
+      const hunShortage = Math.max(0, hunBaseBurden - hunIncome);
       const jjuSupport = hunShortage;
-      const livingPool = totalIncome - fixedCashTotal - totalCard;
+      const finalLivingPool = totalIncome - hunBaseBurden;
       const afterAllExpense = totalIncome - totalExpense;
 
       document.getElementById("settlementSummary").innerHTML = `
-        <div class="line"><strong>훈 수입:</strong> ₩ ${hunIncome.toLocaleString()}</div>
-        <div class="line"><strong>쭈 수입:</strong> ₩ ${jjuIncome.toLocaleString()}</div>
-        <div class="line"><strong>기타 수입:</strong> ₩ ${otherIncome.toLocaleString()}</div>
-        <div class="line"><strong>총 수입:</strong> ₩ ${totalIncome.toLocaleString()}</div>
+        <div class="line"><strong>훈 수입:</strong> ${formatMoney(hunIncome)}</div>
+        <div class="line"><strong>쭈 수입:</strong> ${formatMoney(jjuIncome)}</div>
+        <div class="line"><strong>기타 수입:</strong> ${formatMoney(otherIncome)}</div>
+        <div class="line"><strong>총 수입:</strong> ${formatMoney(totalIncome)}</div>
 
-        <div class="line"><strong>고정지출 현금/계좌이체 총액:</strong> ₩ ${fixedCashTotal.toLocaleString()}</div>
-        <div class="line"><strong>고정지출 카드 총액:</strong> ₩ ${fixedCardTotal.toLocaleString()}</div>
-        <div class="line"><strong>이번 정산기간 카드값 총액:</strong> ₩ ${totalCard.toLocaleString()}</div>
+        <div class="line"><strong>고정지출 현금/계좌이체 총액:</strong> ${formatMoney(fixedCashTotal)}</div>
+        <div class="line"><strong>고정지출 카드 총액:</strong> ${formatMoney(fixedCardTotal)}</div>
+        <div class="line"><strong>이번 정산기간 카드값 총액:</strong> ${formatMoney(totalCard)}</div>
 
-        <div class="line"><strong>훈 현금/계좌이체 부담:</strong> ₩ ${hunCash.toLocaleString()}</div>
-        <div class="line"><strong>훈 카드 부담:</strong> ₩ ${hunCard.toLocaleString()}</div>
-        <div class="line"><strong>쭈 현금/계좌이체 부담:</strong> ₩ ${jjuCash.toLocaleString()}</div>
-        <div class="line"><strong>쭈 카드 부담:</strong> ₩ ${jjuCard.toLocaleString()}</div>
+        <div class="line">
+          <strong>훈이 먼저 부담할 금액</strong><br>
+          <span class="muted">고정지출 현금/계좌이체 + 이번 정산기간 카드값 총액</span><br>
+          ${formatMoney(hunBaseBurden)}
+        </div>
 
-        <div class="line"><strong>훈 수입 대비 부족분:</strong> ₩ ${hunShortage.toLocaleString()}</div>
-        <div class="line"><strong>쭈가 메운 금액:</strong> ₩ ${jjuSupport.toLocaleString()}</div>
+        <div class="line"><strong>훈 실제 부담 가능 금액:</strong> ${formatMoney(hunActualPay)}</div>
+        <div class="line"><strong>훈 수입 부족분:</strong> ${formatMoney(hunShortage)}</div>
+        <div class="line"><strong>쭈가 메운 금액:</strong> ${formatMoney(jjuSupport)}</div>
 
-        <div class="line"><strong>정산 후 생활비 재원</strong><br><span class="muted">총수입 - 고정지출 현금/계좌이체 - 카드값 총액</span><br>₩ ${livingPool.toLocaleString()}</div>
+        <div class="line">
+          <strong class="pink-strong">최종 생활비</strong><br>
+          <span class="muted">총수입 - 훈이 먼저 부담할 금액</span><br>
+          <strong class="summary-strong">${formatMoney(finalLivingPool)}</strong>
+        </div>
 
-        <div class="line"><strong>참고: 전체 지출까지 반영한 순잔액</strong><br><span class="muted">총수입 - 전체 지출</span><br>₩ ${afterAllExpense.toLocaleString()}</div>
+        <div class="line"><strong>참고: 전체 지출까지 반영한 순잔액</strong><br><span class="muted">총수입 - 전체 지출</span><br>${formatMoney(afterAllExpense)}</div>
+
+        <div class="line"><strong>참고용 사람별 지출</strong><br>
+          <span class="muted">
+            훈 현금/계좌이체 ${formatMoney(hunCash)} / 훈 카드 ${formatMoney(hunCard)}<br>
+            쭈 현금/계좌이체 ${formatMoney(jjuCash)} / 쭈 카드 ${formatMoney(jjuCard)}
+          </span>
+        </div>
       `;
+
+      const cardBreakdownHtml = Object.keys(settlementCardMap).length
+        ? Object.entries(settlementCardMap)
+            .sort((a, b) => b[1] - a[1])
+            .map(([cardName, amt]) => `<div class="line"><strong>${cardName}</strong> ${formatMoney(amt)}</div>`)
+            .join("")
+        : "해당 기간 카드내역이 없습니다.";
+
+      document.getElementById("settlementCardBreakdown").innerHTML = cardBreakdownHtml;
     }
 
     async function applySelectedMonth() {
