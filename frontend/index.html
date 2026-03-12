@@ -2015,8 +2015,23 @@ async function saveRecipe() {
   }
 
   const { error } = await supabaseClient
+
+  let result;
+
+if (window.editingRecipeId) {
+  result = await supabaseClient
+    .from("recipes")
+    .update({ title, memo, category })
+    .eq("id", window.editingRecipeId);
+
+  window.editingRecipeId = null;
+} else {
+  result = await supabaseClient
     .from("recipes")
     .insert([{ title, memo, category }]);
+}
+
+const { error } = result;
 
   if (error) {
     alert("저장 실패: " + error.message);
@@ -2120,6 +2135,20 @@ if (keyword) {
 
   await loadRecipes();
 }
+function editRecipe(id) {
+  const item = recipeData.find(r => r.id === id);
+  if (!item) return;
+
+  document.getElementById("recipeTitle").value = item.title || "";
+  document.getElementById("recipeMemo").value = item.memo || "";
+  document.getElementById("recipeCategory").value = item.category || "기타";
+
+  // 수정모드 표시용
+  window.editingRecipeId = id;
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+    
   </script>
 </body>
 </html>
