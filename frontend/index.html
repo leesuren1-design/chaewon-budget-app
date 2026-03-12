@@ -179,6 +179,11 @@
       margin-top: 2px;
     }
 
+    .calendar-amount {
+  color: #4a78e0;
+  font-weight: 700;
+}
+
     .muted {
       color: #907f86;
       font-size: 13px;
@@ -1708,7 +1713,7 @@ async function deleteFixedExpense(id) {
           label = item.memo || payment;
         }
 
-        grouped.push(`${label} ₩${amt.toLocaleString()}`);
+       grouped.push(`${label} <span class="calendar-amount">₩${amt.toLocaleString()}</span>`);
       });
 
       const maxVisible = isMobile ? 2 : 4;
