@@ -246,6 +246,34 @@
       padding: 16px;
     }
 
+    .tab-row {
+      display: flex;
+      gap: 8px;
+      margin: 12px 0 10px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: #f4f4f4;
+      box-shadow: none;
+      font-size: 14px;
+    }
+
+    .tab-btn.active {
+      background: #ffd6e4;
+      font-weight: 700;
+    }
+
+    .mini-total {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px dashed #e7c7d2;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
     @media (max-width: 1100px) {
       .top-summary-grid,
       .settlement-top-grid,
@@ -259,9 +287,12 @@
       .detail-grid,
       .record-input-grid,
       .record-list-grid,
-      .settlement-top-grid,
-      .calendar-grid {
+      .settlement-top-grid {
         grid-template-columns: 1fr;
+      }
+
+      .calendar-grid {
+        grid-template-columns: repeat(7, 1fr);
       }
     }
   </style>
@@ -318,13 +349,29 @@
         <div class="card soft-card">
           <h3>카드 지출</h3>
           <strong id="cardExpense" class="summary-strong">₩ 0</strong>
+
+          <div class="tab-row">
+            <button id="cardTabHun" class="tab-btn active" onclick="setExpenseTab('card', '훈')">훈</button>
+            <button id="cardTabJju" class="tab-btn" onclick="setExpenseTab('card', '쭈')">쭈</button>
+          </div>
+
           <div class="sub" id="cardBreakdown">카드별 내역 없음</div>
+          <div class="mini-total" id="cardPersonTotal">훈 카드 합계: ₩ 0</div>
+          <div class="mini-total">카드 총합: <span id="cardTotalBottom">₩ 0</span></div>
         </div>
 
         <div class="card soft-card">
           <h3>현금/계좌이체 지출</h3>
           <strong id="cashExpense" class="summary-strong">₩ 0</strong>
+
+          <div class="tab-row">
+            <button id="cashTabHun" class="tab-btn active" onclick="setExpenseTab('cash', '훈')">훈</button>
+            <button id="cashTabJju" class="tab-btn" onclick="setExpenseTab('cash', '쭈')">쭈</button>
+          </div>
+
           <div class="sub" id="cashBreakdown">현금/계좌이체 내역 없음</div>
+          <div class="mini-total" id="cashPersonTotal">훈 현금/이체 합계: ₩ 0</div>
+          <div class="mini-total">현금/이체 총합: <span id="cashTotalBottom">₩ 0</span></div>
         </div>
 
         <div class="card soft-card">
@@ -429,15 +476,6 @@
 
         <input id="fixedMemo" placeholder="메모" /><br /><br />
 
-<br><br>
-
-<div>
-  <div class="sub">색상</div>
-  <input type="color" id="fixedColor">
-</div>
-
-
-        
         <label class="muted">
           <input id="fixedActive" type="checkbox" checked />
           사용중
@@ -541,6 +579,17 @@
     let currentMode = "record";
     let currentSettlementDay = 25;
     let fixedExpenseCache = {};
+    let currentCardTab = "훈";
+    let currentCashTab = "훈";
+
+    let expenseTabData = {
+      cardTotal: 0,
+      cashTotal: 0,
+      cardByPerson: { "훈": {}, "쭈": {} },
+      cashByPerson: { "훈": {}, "쭈": {} },
+      cardPersonTotal: { "훈": 0, "쭈": 0 },
+      cashPersonTotal: { "훈": 0, "쭈": 0 }
+    };
 
     function getTodayString() {
       return new Date().toISOString().split("T")[0];
@@ -637,6 +686,44 @@
       return item.card_name || "기타카드";
     }
 
+    function renderExpenseTabs() {
+      const cardMap = expenseTabData.cardByPerson[currentCardTab] || {};
+      const cashMap = expenseTabData.cashByPerson[currentCashTab] || {};
+
+      const cardHtml = Object.keys(cardMap).length
+        ? Object.entries(cardMap).map(([k, v]) => `${k} ₩${v.toLocaleString()}`).join("<br>")
+        : `${currentCardTab} 카드 내역 없음`;
+
+      const cashHtml = Object.keys(cashMap).length
+        ? Object.entries(cashMap).map(([k, v]) => `${k} ₩${v.toLocaleString()}`).join("<br>")
+        : `${currentCashTab} 현금/이체 내역 없음`;
+
+      document.getElementById("cardBreakdown").innerHTML = cardHtml;
+      document.getElementById("cashBreakdown").innerHTML = cashHtml;
+
+      document.getElementById("cardPersonTotal").innerText =
+        `${currentCardTab} 카드 합계: ${formatMoney(expenseTabData.cardPersonTotal[currentCardTab] || 0)}`;
+      document.getElementById("cashPersonTotal").innerText =
+        `${currentCashTab} 현금/이체 합계: ${formatMoney(expenseTabData.cashPersonTotal[currentCashTab] || 0)}`;
+
+      document.getElementById("cardTotalBottom").innerText = formatMoney(expenseTabData.cardTotal || 0);
+      document.getElementById("cashTotalBottom").innerText = formatMoney(expenseTabData.cashTotal || 0);
+
+      document.getElementById("cardTabHun").classList.toggle("active", currentCardTab === "훈");
+      document.getElementById("cardTabJju").classList.toggle("active", currentCardTab === "쭈");
+      document.getElementById("cashTabHun").classList.toggle("active", currentCashTab === "훈");
+      document.getElementById("cashTabJju").classList.toggle("active", currentCashTab === "쭈");
+    }
+
+    function setExpenseTab(type, person) {
+      if (type === "card") {
+        currentCardTab = person;
+      } else {
+        currentCashTab = person;
+      }
+      renderExpenseTabs();
+    }
+
     async function loadSettings() {
       const { data, error } = await supabaseClient
         .from("app_settings")
@@ -700,8 +787,17 @@
         document.getElementById("nextCardExpenseRange").innerText = "카드 기준일 반영";
         document.getElementById("personSummary").innerHTML = "저장된 내역이 없습니다.";
         document.getElementById("expenseBreakdown").innerText = "훈카드 ₩0 / 훈현금 ₩0 / 쭈카드 ₩0 / 쭈현금 ₩0";
-        document.getElementById("cardBreakdown").innerText = "카드별 내역 없음";
-        document.getElementById("cashBreakdown").innerText = "현금/계좌이체 내역 없음";
+
+        expenseTabData = {
+          cardTotal: 0,
+          cashTotal: 0,
+          cardByPerson: { "훈": {}, "쭈": {} },
+          cashByPerson: { "훈": {}, "쭈": {} },
+          cardPersonTotal: { "훈": 0, "쭈": 0 },
+          cashPersonTotal: { "훈": 0, "쭈": 0 }
+        };
+        renderExpenseTabs();
+
         updateRemaining();
         return;
       }
@@ -712,8 +808,12 @@
 
       const personTotals = { "훈": 0, "쭈": 0, "채원": 0, "나은": 0, "기타": 0 };
       const payerBreakdown = { "훈카드": 0, "훈현금": 0, "쭈카드": 0, "쭈현금": 0 };
-      const cardMap = {};
-      const cashMap = {};
+
+      const cardByPerson = { "훈": {}, "쭈": {} };
+      const cashByPerson = { "훈": {}, "쭈": {} };
+      const cardPersonTotal = { "훈": 0, "쭈": 0 };
+      const cashPersonTotal = { "훈": 0, "쭈": 0 };
+
       let html = "";
 
       data.forEach((item) => {
@@ -731,19 +831,35 @@
         if (payment === "카드") {
           cardTotal += amt;
 
-          if (person === "훈") payerBreakdown["훈카드"] += amt;
-          if (person === "쭈") payerBreakdown["쭈카드"] += amt;
+          if (person === "훈") {
+            payerBreakdown["훈카드"] += amt;
+            const key = cardName || "기타카드";
+            cardByPerson["훈"][key] = (cardByPerson["훈"][key] || 0) + amt;
+            cardPersonTotal["훈"] += amt;
+          }
 
-          const cardKey = `${cardName}`;
-          cardMap[cardKey] = (cardMap[cardKey] || 0) + amt;
+          if (person === "쭈") {
+            payerBreakdown["쭈카드"] += amt;
+            const key = cardName || "기타카드";
+            cardByPerson["쭈"][key] = (cardByPerson["쭈"][key] || 0) + amt;
+            cardPersonTotal["쭈"] += amt;
+          }
         } else {
           cashTotal += amt;
 
-          if (person === "훈") payerBreakdown["훈현금"] += amt;
-          if (person === "쭈") payerBreakdown["쭈현금"] += amt;
+          if (person === "훈") {
+            payerBreakdown["훈현금"] += amt;
+            const key = payment;
+            cashByPerson["훈"][key] = (cashByPerson["훈"][key] || 0) + amt;
+            cashPersonTotal["훈"] += amt;
+          }
 
-          const cashKey = `${person} ${payment}`;
-          cashMap[cashKey] = (cashMap[cashKey] || 0) + amt;
+          if (person === "쭈") {
+            payerBreakdown["쭈현금"] += amt;
+            const key = payment;
+            cashByPerson["쭈"][key] = (cashByPerson["쭈"][key] || 0) + amt;
+            cashPersonTotal["쭈"] += amt;
+          }
         }
 
         html += `
@@ -758,6 +874,15 @@
           </div>
         `;
       });
+
+      expenseTabData = {
+        cardTotal,
+        cashTotal,
+        cardByPerson,
+        cashByPerson,
+        cardPersonTotal,
+        cashPersonTotal
+      };
 
       const settlementRange = getNextCardEstimateRange();
 
@@ -775,14 +900,6 @@
         });
       }
 
-      const cardBreakdownText = Object.keys(cardMap).length
-        ? Object.entries(cardMap).map(([k, v]) => `${k} ₩${v.toLocaleString()}`).join("<br>")
-        : "카드별 내역 없음";
-
-      const cashBreakdownText = Object.keys(cashMap).length
-        ? Object.entries(cashMap).map(([k, v]) => `${k} ₩${v.toLocaleString()}`).join("<br>")
-        : "현금/계좌이체 내역 없음";
-
       document.getElementById("expenseList").innerHTML = html;
       document.getElementById("totalExpense").innerText = "₩ " + total.toLocaleString();
       document.getElementById("cardExpense").innerText = "₩ " + cardTotal.toLocaleString();
@@ -795,9 +912,6 @@
         `훈카드 ₩${payerBreakdown["훈카드"].toLocaleString()} / 훈현금 ₩${payerBreakdown["훈현금"].toLocaleString()}<br>` +
         `쭈카드 ₩${payerBreakdown["쭈카드"].toLocaleString()} / 쭈현금 ₩${payerBreakdown["쭈현금"].toLocaleString()}`;
 
-      document.getElementById("cardBreakdown").innerHTML = cardBreakdownText;
-      document.getElementById("cashBreakdown").innerHTML = cashBreakdownText;
-
       document.getElementById("personSummary").innerHTML = `
         <div class="line">훈: ₩ ${personTotals["훈"].toLocaleString()}</div>
         <div class="line">쭈: ₩ ${personTotals["쭈"].toLocaleString()}</div>
@@ -806,6 +920,7 @@
         <div style="padding-top:10px;">기타: ₩ ${personTotals["기타"].toLocaleString()}</div>
       `;
 
+      renderExpenseTabs();
       updateRemaining();
     }
 
@@ -996,10 +1111,7 @@
         html += `
           <div class="line">
             <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-
-              <strong style="color:${item.color || '#222'}">
-매달 ${item.day}일 / ${item.name}
-</strong>
+              <strong>매달 ${item.day}일 / ${item.name}</strong>
               <div class="inline-actions">
                 <button class="small-btn" onclick="editFixedExpense(${item.id})">수정</button>
                 <button class="small-btn danger-btn" onclick="deleteFixedExpense(${item.id})">삭제</button>
@@ -1019,7 +1131,7 @@
     function editFixedExpense(id) {
       const item = fixedExpenseCache[id];
       if (!item) return;
-document.getElementById("fixedColor").value = item.color || "#ffe6ee";
+
       document.getElementById("fixedId").value = item.id;
       document.getElementById("fixedName").value = item.name || "";
       document.getElementById("fixedAmount").value = item.amount || "";
@@ -1140,17 +1252,16 @@ document.getElementById("fixedColor").value = item.color || "#ffe6ee";
         return;
       }
 
-    const payload = {
-  name,
-  amount: Number(amount),
-  day: Number(day),
-  payment_method: paymentMethod,
-  card_name: paymentMethod === "카드" ? cardName : "",
-  person,
-  memo,
-  color: document.getElementById("fixedColor").value,
-  is_active: isActive
-};
+      const payload = {
+        name,
+        amount: Number(amount),
+        day: Number(day),
+        payment_method: paymentMethod,
+        card_name: paymentMethod === "카드" ? cardName : "",
+        person,
+        memo,
+        is_active: isActive
+      };
 
       let savedId = null;
 
@@ -1373,12 +1484,10 @@ document.getElementById("fixedColor").value = item.color || "#ffe6ee";
 
           inner += `<div class="sub">`;
           Object.entries(cardMap).forEach(([k, v]) => {
-         const color = item.color || "#222";
-inner += `<div>${k} ₩${v.toLocaleString()}</div>`;
+            inner += `<div>${k} ₩${v.toLocaleString()}</div>`;
           });
           Object.entries(cashMap).forEach(([k, v]) => {
-         const color = item.color || "#222";
-inner += `<div>${k} ₩${v.toLocaleString()}</div>`;
+            inner += `<div>${k} ₩${v.toLocaleString()}</div>`;
           });
           inner += `</div>`;
         }
