@@ -2014,139 +2014,45 @@ async function saveRecipe() {
     return;
   }
 
-  const { error } = await supabaseClient
-
   let result;
 
-if (window.editingRecipeId) {
-  result = await supabaseClient
-    .from("recipes")
-    .update({ title, memo, category })
-    .eq("id", window.editingRecipeId);
+  if (window.editingRecipeId) {
+    result = await supabaseClient
+      .from("recipes")
+      .update({ title, memo, category })
+      .eq("id", window.editingRecipeId);
 
-  window.editingRecipeId = null;
-} else {
-  result = await supabaseClient
-    .from("recipes")
-    .insert([{ title, memo, category }]);
-}
+    window.editingRecipeId = null;
+  } else {
+    result = await supabaseClient
+      .from("recipes")
+      .insert([{ title, memo, category }]);
+  }
 
-const { error } = result;
-
-  if (error) {
-    alert("저장 실패: " + error.message);
+  if (result.error) {
+    alert("저장 실패: " + result.error.message);
     return;
   }
 
   document.getElementById("recipeTitle").value = "";
   document.getElementById("recipeMemo").value = "";
+  document.getElementById("recipeCategory").value = "국";
 
   await loadRecipes();
 }
 
-    async function loadRecipes() {
-  const { data, error } = await supabaseClient
-    .from("recipes")
-    .select("*")
-    .order("id", { ascending: false });
+function setRecipeTab(tab, el) {
+  currentRecipeTab = tab;
 
-  if (error) {
-    document.getElementById("recipeList").innerHTML = "불러오기 실패";
-    return;
+  document.querySelectorAll("#recipeTabs .tab-btn").forEach(btn => {
+    btn.classList.remove("active");
+  });
+
+  if (el) {
+    el.classList.add("active");
   }
 
-  recipeData = data || [];
   renderRecipes();
-}
-
-  function renderRecipes() {
-  const wrap = document.getElementById("recipeList");
-
-  let filtered = [...recipeData];
-
-
-const keyword = (document.getElementById("recipeSearch")?.value || "").toLowerCase();
-
-if (keyword) {
-  filtered = filtered.filter(item =>
-    (item.title || "").toLowerCase().includes(keyword) ||
-    (item.memo || "").toLowerCase().includes(keyword)
-  );
-}
-  if (currentRecipeTab !== "전체") {
-    filtered = filtered.filter(item =>
-      (item.category || "기타") === currentRecipeTab
-    );
-  }
-
-  if (!filtered.length) {
-    wrap.innerHTML = "레시피 없음";
-    return;
-  }
-
-  wrap.innerHTML = filtered.map(item => `
-    <div class="card soft-card" style="margin-bottom:14px;">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
-        <div>
-          <h3 style="margin-bottom:6px;">🍽 ${item.title}</h3>
-          <div class="sub" style="margin-top:0;">
-            <span style="
-              display:inline-block;
-              padding:4px 10px;
-              border-radius:999px;
-              background:#fff1f6;
-              color:#c2577a;
-              font-weight:700;
-              font-size:12px;
-            ">
-              ${item.category || "기타"}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div class="sub" style="margin-top:14px; white-space:pre-line;">
-  ${(item.memo || "").replace(
-    /(https?:\/\/[^\s]+)/g,
-    '<a href="$1" target="_blank">▶ 영상보기</a>'
-  )}
-</div>
-
-     <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:14px;">
-  <button class="small-btn" onclick="editRecipe(${item.id})">수정</button>
-  <button class="small-btn danger-btn" onclick="deleteRecipe(${item.id})">삭제</button>
-</div>
-    </div>
-  `).join("");
-}
-    async function deleteRecipe(id) {
-  const ok = confirm("이 레시피를 삭제할까요?");
-  if (!ok) return;
-
-  const { error } = await supabaseClient
-    .from("recipes")
-    .delete()
-    .eq("id", id);
-
-  if (error) {
-    alert("삭제 실패: " + error.message);
-    return;
-  }
-
-  await loadRecipes();
-}
-function editRecipe(id) {
-  const item = recipeData.find(r => r.id === id);
-  if (!item) return;
-
-  document.getElementById("recipeTitle").value = item.title || "";
-  document.getElementById("recipeMemo").value = item.memo || "";
-  document.getElementById("recipeCategory").value = item.category || "기타";
-
-  // 수정모드 표시용
-  window.editingRecipeId = id;
-
-  window.scrollTo({ top: 0, behavior: "smooth" });
 }
     
   </script>
