@@ -638,6 +638,11 @@
 
   <div class="card">
     <h3>📖 레시피 목록</h3>
+    
+<input id="recipeSearch" placeholder="🔎 레시피 검색"
+  oninput="renderRecipes()"
+  style="margin-bottom:12px;" />
+
     <div id="recipeList">불러오는 중...</div>
   </div>
 
@@ -2044,6 +2049,15 @@ async function saveRecipe() {
 
   let filtered = [...recipeData];
 
+
+const keyword = (document.getElementById("recipeSearch")?.value || "").toLowerCase();
+
+if (keyword) {
+  filtered = filtered.filter(item =>
+    (item.title || "").toLowerCase().includes(keyword) ||
+    (item.memo || "").toLowerCase().includes(keyword)
+  );
+}
   if (currentRecipeTab !== "전체") {
     filtered = filtered.filter(item =>
       (item.category || "기타") === currentRecipeTab
