@@ -1647,92 +1647,89 @@ async function deleteFixedExpense(id) {
   await loadSettlementSummary();
 }
     async function loadCalendar() {
-      const { year, month, startString, endString } = getSelectedMonthRange();
+  const { year, month, startString, endString } = getSelectedMonthRange();
 
-      const { data, error } = await supabaseClient
-        .from("expenses")
-        .select("*")
-        .gte("date", startString)
-        .lt("date", endString);
+  const { data, error } = await supabaseClient
+    .from("expenses")
+    .select("*")
+    .gte("date", startString)
+    .lt("date", endString);
 
-      if (error) {
-        document.getElementById("monthCalendar").innerHTML = "달력 불러오기 실패";
-        return;
-      }
+  if (error) {
+    document.getElementById("monthCalendar").innerHTML = "달력 불러오기 실패";
+    return;
+  }
 
-      const byDate = {};
-      (data || []).forEach(item => {
-        const date = item.date;
-        if (!byDate[date]) byDate[date] = [];
-        byDate[date].push(item);
-      });
+  const byDate = {};
+  (data || []).forEach(item => {
+    const date = item.date;
+    if (!byDate[date]) byDate[date] = [];
+    byDate[date].push(item);
+  });
 
-      const firstDate = new Date(year, month - 1, 1);
-      const firstDay = firstDate.getDay();
-      const daysInMonth = new Date(year, month, 0).getDate();
-      const weekNames = ["일", "월", "화", "수", "목", "금", "토"];
-      const isMobile = window.innerWidth <= 900;
+  const firstDate = new Date(year, month - 1, 1);
+  const firstDay = firstDate.getDay();
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const weekNames = ["일", "월", "화", "수", "목", "금", "토"];
+  const isMobile = window.innerWidth <= 900;
 
-      let html = `
-        <div class="calendar-grid" style="margin-bottom:8px;">
-          ${weekNames.map(day => `<div class="week-name">${day}</div>`).join("")}
-        </div>
-        <div class="calendar-grid">
-      `;
+  let html = `
+    <div class="calendar-grid" style="margin-bottom:8px;">
+      ${weekNames.map(day => `<div class="week-name">${day}</div>`).join("")}
+    </div>
+    <div class="calendar-grid">
+  `;
 
-      for (let i = 0; i < firstDay; i++) {
-        html += `<div></div>`;
-      }
+  for (let i = 0; i < firstDay; i++) {
+    html += `<div></div>`;
+  }
 
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dateString = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-        let inner = `<div class="calendar-date">${day}</div>`;
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateString = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    let inner = `<div class="calendar-date">${day}</div>`;
 
-        if (byDate[dateString]) {
-          const items = byDate[dateString];
-          const grouped = [];
-          const cardMap = {};
-          const cashMap = {};
+    if (byDate[dateString]) {
+      const items = byDate[dateString];
+      const grouped = [];
 
-          items.forEach(item => {
-            const amt = Number(item.amount || 0);
-            const payment = item.payment_method || "현금";
+      items.forEach(item => {
+        const amt = Number(item.amount || 0);
+        const payment = item.payment_method || "현금";
+        const isFixed = item.fixed_expense_id !== null && item.fixed_expense_id !== undefined;
 
-            if (payment === "카드") {
-              const cardName = item.card_name || "기타카드";
-              cardMap[cardName] = (cardMap[cardName] || 0) + amt;
-            } else {
-              cashMap[payment] = (cashMap[payment] || 0) + amt;
-            }
-          });
+        let label = "";
 
-          Object.entries(cardMap).forEach(([k, v]) => {
-            grouped.push(`${k} ₩${v.toLocaleString()}`);
-          });
-
-          Object.entries(cashMap).forEach(([k, v]) => {
-            grouped.push(`${k} ₩${v.toLocaleString()}`);
-          });
-
-          const maxVisible = isMobile ? 2 : 4;
-          const visibleItems = grouped.slice(0, maxVisible);
-          const hiddenCount = grouped.length - visibleItems.length;
-
-          visibleItems.forEach(text => {
-            inner += `<div class="calendar-item">${text}</div>`;
-          });
-
-          if (hiddenCount > 0) {
-            inner += `<div class="calendar-more">+${hiddenCount}건</div>`;
-          }
+        if (isFixed) {
+          const memoText = item.memo || "";
+          label = memoText.split(" / ")[0] || "고정지출";
+        } else if (payment === "카드") {
+          label = item.card_name || "기타카드";
+        } else {
+          label = item.memo || payment;
         }
 
-        html += `<div class="calendar-cell">${inner}</div>`;
-      }
+        grouped.push(`${label} ₩${amt.toLocaleString()}`);
+      });
 
-      html += `</div>`;
-      document.getElementById("monthCalendar").innerHTML = html;
+      const maxVisible = isMobile ? 2 : 4;
+      const visibleItems = grouped.slice(0, maxVisible);
+      const hiddenCount = grouped.length - visibleItems.length;
+
+      visibleItems.forEach(text => {
+        inner += `<div class="calendar-item">${text}</div>`;
+      });
+
+      if (hiddenCount > 0) {
+        inner += `<div class="calendar-more">+${hiddenCount}건</div>`;
+      }
     }
+
+    html += `<div class="calendar-cell">${inner}</div>`;
+  }
+
+  html += `</div>`;
+  document.getElementById("monthCalendar").innerHTML = html;
+}
 async function loadSettlementSummary() {
   const { startString, endString, monthValue } = getSettlementRange();
 
