@@ -939,71 +939,77 @@
     }
 
     async function saveOrUpdateFixedExpense() {
-      const id = document.getElementById("fixedId").value;
-      const name = document.getElementById("fixedName").value;
-      const amount = document.getElementById("fixedAmount").value;
-      const day = document.getElementById("fixedDay").value;
-      const paymentMethod = document.getElementById("fixedPayment").value;
-      const cardName = document.getElementById("fixedCardName").value;
-      const person = document.getElementById("fixedPerson").value;
-      const memo = document.getElementById("fixedMemo").value;
-      const isActive = document.getElementById("fixedActive").checked;
+  const id = document.getElementById("fixedId").value;
+  const name = document.getElementById("fixedName").value;
+  const amount = document.getElementById("fixedAmount").value;
+  const day = document.getElementById("fixedDay").value;
+  const paymentMethod = document.getElementById("fixedPayment").value;
+  const cardName = document.getElementById("fixedCardName").value;
+  const person = document.getElementById("fixedPerson").value;
+  const memo = document.getElementById("fixedMemo").value;
+  const isActive = document.getElementById("fixedActive").checked;
 
-      if (!name || !amount || !day) {
-        alert("이름, 금액, 날짜를 입력하세요");
-        return;
-      }
+  if (!name || !amount || !day) {
+    alert("이름, 금액, 날짜를 입력하세요");
+    return;
+  }
 
-      const payload = {
-        name,
-        amount: Number(amount),
-        day: Number(day),
-        payment_method: paymentMethod,
-        card_name: paymentMethod === "카드" ? cardName : "",
-        person,
-        memo,
-        is_active: isActive
-      };
+  const payload = {
+    name,
+    amount: Number(amount),
+    day: Number(day),
+    payment_method: paymentMethod,
+    card_name: paymentMethod === "카드" ? cardName : "",
+    person,
+    memo,
+    is_active: isActive
+  };
 
-      let savedId = null;
-      let error = null;
+  let savedId = null;
 
-      if (id) {
-        const result = await supabaseClient
-          .from("fixed_expenses")
-          .update(payload)
-          .eq("id", id)
-          .select()
-          .single();
+  if (id) {
+    const { error } = await supabaseClient
+      .from("fixed_expenses")
+      .update(payload)
+      .eq("id", id);
 
-        error = result.error;
-        if (result.data) savedId = result.data.id;
-      } else {
-        const result = await supabaseClient
-          .from("fixed_expenses")
-          .insert([payload])
-          .select()
-          .single();
-
-        error = result.error;
-        if (result.data) savedId = result.data.id;
-      }
-
-      if (error) {
-        alert("고정지출 저장 실패: " + error.message);
-        return;
-      }
-
-      if (savedId && isActive) {
-        await syncFixedExpenseToSelectedMonth(savedId);
-      }
-
-      resetFixedForm();
-      await loadFixedExpenses();
-      await loadExpenses();
-      await loadCalendar();
-      await loadSettlementSummary();
+    if (error) {
+      alert("고정지출 수정 실패: " + error.message);
+      return;
     }
+
+    savedId = Number(id);
+  } else {
+    const { data, error } = await supabaseClient
+      .from("fixed_expenses")
+      .insert([payload])
+      .select("id")
+      .maybeSingle();
+
+    if (error) {
+      alert("고정지출 저장 실패: " + error.message);
+      return;
+    }
+
+    if (!data || !data.id) {
+      alert("고정지출 저장은 되었지만 id를 읽지 못했어요. 새로고침 후 다시 확인해주세요.");
+      await loadFixedExpenses();
+      return;
+    }
+
+    savedId = data.id;
+  }
+
+  if (savedId && isActive) {
+    await syncFixedExpenseToSelectedMonth(savedId);
+  }
+
+  resetFixedForm();
+  await loadFixedExpenses();
+  await loadExpenses();
+  await loadCalendar();
+  await loadSettlementSummary();
+}
 
     async function deleteFixedExpense(id) {
       const ok = confirm("고정지출을 삭제할까요?\n선택한 달에 불러온 내역도 함께 지울까요?");
