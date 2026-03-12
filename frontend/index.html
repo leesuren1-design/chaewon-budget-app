@@ -1298,7 +1298,7 @@ document.getElementById("personSummary").innerHTML = `
         .select("*")
         .order("day", { ascending: true })
         .order("id", { ascending: true });
-
+console.log("fixed_expenses:", data, error);
       if (error) {
         document.getElementById("fixedList").innerHTML = "고정지출 불러오기 실패";
         return;
@@ -1528,7 +1528,42 @@ document.getElementById("personSummary").innerHTML = `
   await loadCalendar();
   await loadSettlementSummary();
 }
-  
+
+async function deleteFixedExpense(id) {
+  const ok = confirm("고정지출을 삭제할까요?\n선택한 달에 불러온 내역도 함께 지울까요?");
+  if (!ok) return;
+
+  const { startString, endString } = getSelectedMonthRange();
+
+  const { error: expenseDeleteError } = await supabaseClient
+    .from("expenses")
+    .delete()
+    .eq("fixed_expense_id", id)
+    .gte("date", startString)
+    .lt("date", endString);
+
+  if (expenseDeleteError) {
+    alert("선택한 달 반영내역 삭제 실패: " + expenseDeleteError.message);
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("fixed_expenses")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert("고정지출 삭제 실패: " + error.message);
+    return;
+  }
+
+  await loadFixedExpenses();
+  await loadExpenses();
+  await loadCalendar();
+  await loadSettlementSummary();
+}
+
+    
    async function importFixedExpenses() {
   const { year, month, startString, endString, monthValue } = getSelectedMonthRange();
 
@@ -1993,15 +2028,16 @@ async function loadSettlementSummary() {
     updateSelectedMonthLabel();
     setMode("record");
 
-   loadSettings().then(async () => {
+loadSettings().then(async () => {
   await loadExpenses();
   await loadIncome();
-  await loadFixedExpenses();
   await loadCalendar();
   await loadSettlementSummary();
   await loadMonthlySettlement();
   await loadRecipes();
 });
+
+loadFixedExpenses();
 
 async function saveRecipe() {
   const title = document.getElementById("recipeTitle").value.trim();
