@@ -7,11 +7,11 @@
 
   <style>
     body {
-      font-family: sans-serif;
-      background: #f6f2f4;
+      font-family: "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      background: linear-gradient(180deg, #fcf7f9 0%, #f8f1f4 100%);
       margin: 0;
       padding: 20px;
-      color: #222;
+      color: #2b2b2b;
     }
 
     h1, h2, h3 {
@@ -21,14 +21,19 @@
     h1 {
       text-align: center;
       margin-bottom: 20px;
+      font-weight: 800;
+      color: #4a3440;
+      letter-spacing: -0.3px;
     }
 
     .card {
-      background: white;
-      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 18px;
       padding: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 8px 24px rgba(158, 118, 137, 0.08);
+      border: 1px solid #f3e2ea;
       margin-bottom: 18px;
+      backdrop-filter: blur(2px);
     }
 
     .row {
@@ -47,20 +52,30 @@
       padding: 12px 16px;
       border: none;
       border-radius: 12px;
-      background: white;
+      background: #ffffff;
       font-size: 15px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 2px 8px rgba(150, 120, 136, 0.08);
       cursor: pointer;
+      color: #46333d;
+      transition: all 0.18s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
     }
 
     .primary-btn {
-      background: #ffe6ee;
-      font-weight: 600;
+      background: linear-gradient(180deg, #ffeaf2 0%, #ffdfe9 100%);
+      font-weight: 700;
+      color: #6d4354;
+      border: 1px solid #f4d2de;
     }
 
     .mode-btn.active {
-      background: #ffd6e4;
-      font-weight: 700;
+      background: linear-gradient(180deg, #ffe5ef 0%, #ffd8e6 100%);
+      font-weight: 800;
+      color: #6a3f51;
+      border: 1px solid #f0cddd;
     }
 
     .small-btn {
@@ -70,22 +85,31 @@
     }
 
     .danger-btn {
-      background: #ffe5e5;
+      background: #fff0f2;
+      color: #9a4f61;
+      border: 1px solid #f6d5dd;
     }
 
     input, select {
       width: 100%;
       padding: 12px;
       font-size: 16px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
+      border: 1px solid #ead9e1;
+      border-radius: 12px;
       box-sizing: border-box;
-      background: white;
+      background: #fffdfd;
+      color: #3c3136;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #e8bfd0;
+      box-shadow: 0 0 0 3px rgba(255, 221, 233, 0.6);
     }
 
     .line {
       padding: 10px 0;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid #f2e5ea;
     }
 
     .line:last-child {
@@ -94,7 +118,7 @@
 
     .sub {
       font-size: 14px;
-      color: #666;
+      color: #7a6871;
       margin-top: 6px;
       line-height: 1.5;
     }
@@ -102,6 +126,7 @@
     .summary-strong {
       font-size: 22px;
       font-weight: 800;
+      color: #4a3440;
     }
 
     .inline-actions {
@@ -116,32 +141,51 @@
 
     .calendar-grid {
       display: grid;
-      grid-template-columns: repeat(7, 1fr);
+      grid-template-columns: repeat(7, minmax(0, 1fr));
       gap: 8px;
     }
 
     .calendar-cell {
       min-height: 96px;
-      border: 1px solid #eee;
-      border-radius: 12px;
+      border: 1px solid #f1dfe7;
+      border-radius: 14px;
       padding: 8px;
-      background: white;
+      background: #fffefe;
+      overflow: hidden;
     }
 
     .week-name {
       text-align: center;
       font-weight: 700;
       padding: 6px 0;
-    }
-
-    .muted {
-      color: #777;
+      color: #7d5d6c;
       font-size: 13px;
     }
 
-    .pink-strong {
-      color: #d94b7d;
-      font-weight: 700;
+    .calendar-date {
+      font-weight: 800;
+      margin-bottom: 4px;
+      color: #503844;
+    }
+
+    .calendar-item {
+      font-size: 12px;
+      line-height: 1.35;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #6e5863;
+    }
+
+    .calendar-more {
+      font-size: 11px;
+      color: #a08c96;
+      margin-top: 2px;
+    }
+
+    .muted {
+      color: #8b7b83;
+      font-size: 13px;
     }
 
     .section-block {
@@ -150,22 +194,23 @@
 
     .top-summary-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 15px;
       margin-bottom: 20px;
     }
 
     .top-summary-card {
-      background: white;
-      border-radius: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #fffafb 100%);
+      border-radius: 18px;
       padding: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 6px 18px rgba(160, 122, 141, 0.07);
+      border: 1px solid #f2e1e8;
       text-align: center;
     }
 
     .top-summary-card .label {
       font-size: 14px;
-      color: #777;
+      color: #877079;
       margin-bottom: 8px;
     }
 
@@ -173,10 +218,11 @@
       font-size: 28px;
       font-weight: 800;
       line-height: 1.2;
+      color: #4a3440;
     }
 
     .top-summary-card.highlight {
-      background: #ffe6ee;
+      background: linear-gradient(180deg, #fff7fa 0%, #fff0f5 100%);
     }
 
     .detail-grid {
@@ -187,8 +233,8 @@
     }
 
     .soft-card {
-      background: #fffafb;
-      border: 1px solid #f3d7e1;
+      background: linear-gradient(180deg, #fffdfd 0%, #fff7fa 100%);
+      border: 1px solid #f2e0e8;
     }
 
     .record-input-grid {
@@ -216,16 +262,17 @@
     }
 
     .settlement-top-card {
-      background: white;
-      border-radius: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #fff9fb 100%);
+      border-radius: 18px;
       padding: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 6px 18px rgba(160, 122, 141, 0.07);
+      border: 1px solid #f1dfe7;
       text-align: center;
     }
 
     .settlement-top-card .label {
       font-size: 14px;
-      color: #777;
+      color: #88727c;
       margin-bottom: 8px;
     }
 
@@ -233,15 +280,16 @@
       font-size: 26px;
       font-weight: 800;
       line-height: 1.2;
+      color: #4a3440;
     }
 
     .settlement-top-card.highlight {
-      background: #ffe6ee;
+      background: linear-gradient(180deg, #fffafc 0%, #fff5f8 100%);
     }
 
     .saved-settlement-box {
-      background: #fffafb;
-      border: 1px solid #f3d7e1;
+      background: linear-gradient(180deg, #fffdfd 0%, #fff8fb 100%);
+      border: 1px solid #f1dfe7;
       border-radius: 14px;
       padding: 16px;
     }
@@ -256,22 +304,37 @@
     .tab-btn {
       padding: 8px 14px;
       border-radius: 999px;
-      background: #f4f4f4;
+      background: #faf5f7;
       box-shadow: none;
       font-size: 14px;
+      border: 1px solid #f0dde5;
+      color: #6d5b64;
     }
 
     .tab-btn.active {
-      background: #ffd6e4;
+      background: linear-gradient(180deg, #ffe9f1 0%, #ffdce8 100%);
       font-weight: 700;
+      color: #6e4153;
+      border: 1px solid #efcad8;
     }
 
     .mini-total {
       margin-top: 12px;
       padding-top: 10px;
-      border-top: 1px dashed #e7c7d2;
+      border-top: 1px dashed #edd6df;
       font-size: 14px;
       font-weight: 700;
+      color: #5a454f;
+    }
+
+    .red-text {
+      color: #d05a72 !important;
+      font-weight: 800;
+    }
+
+    .blue-text {
+      color: #4d7ac7 !important;
+      font-weight: 800;
     }
 
     @media (max-width: 1100px) {
@@ -292,7 +355,32 @@
       }
 
       .calendar-grid {
-        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+      }
+
+      .calendar-cell {
+        min-height: 72px;
+        padding: 6px;
+        border-radius: 10px;
+      }
+
+      .week-name {
+        font-size: 12px;
+        padding: 4px 0;
+      }
+
+      .calendar-date {
+        font-size: 12px;
+        margin-bottom: 3px;
+      }
+
+      .calendar-item {
+        font-size: 10px;
+        line-height: 1.25;
+      }
+
+      .calendar-more {
+        font-size: 10px;
       }
     }
   </style>
@@ -331,12 +419,18 @@
           <div class="sub" id="expenseBreakdown">훈카드 ₩0 / 훈현금 ₩0 / 쭈카드 ₩0 / 쭈현금 ₩0</div>
         </div>
 
-        <div class="top-summary-card highlight">
+        <div class="top-summary-card">
+          <div class="label">고정지출 합계</div>
+          <div id="fixedExpenseTotalCard" class="value">₩ 0</div>
+          <div class="sub" id="fixedExpenseBreakdown">카드 ₩0 / 현금·이체 ₩0</div>
+        </div>
+
+        <div class="top-summary-card">
           <div class="label">남은 금액</div>
           <div id="remainingMoney" class="value">₩ 0</div>
         </div>
 
-        <div class="top-summary-card">
+        <div class="top-summary-card highlight">
           <div class="label">다음달 카드 결제 예상</div>
           <div id="nextCardExpense" class="value">₩ 0</div>
           <div class="sub" id="nextCardExpenseRange">카드 기준일 반영</div>
@@ -528,13 +622,13 @@
         </div>
 
         <div class="settlement-top-card">
-          <div class="label">훈이 먼저 부담할 금액</div>
-          <div id="settlementHunBaseBurden" class="value">₩ 0</div>
+          <div class="label red-text">이번달 지출</div>
+          <div id="settlementHunBaseBurden" class="value red-text">₩ 0</div>
         </div>
 
         <div class="settlement-top-card">
-          <div class="label">쭈가 메운 금액</div>
-          <div id="settlementJjuSupport" class="value">₩ 0</div>
+          <div class="label blue-text">훈 수입 부족분</div>
+          <div id="settlementHunShortageTop" class="value blue-text">₩ 0</div>
         </div>
 
         <div class="settlement-top-card highlight">
@@ -585,6 +679,9 @@
     let expenseTabData = {
       cardTotal: 0,
       cashTotal: 0,
+      fixedExpenseTotal: 0,
+      fixedCardExpenseTotal: 0,
+      fixedCashExpenseTotal: 0,
       cardByPerson: { "훈": {}, "쭈": {} },
       cashByPerson: { "훈": {}, "쭈": {} },
       cardPersonTotal: { "훈": 0, "쭈": 0 },
@@ -655,1171 +752,4 @@
     }
 
     function updateRemaining() {
-      const incomeText = document.getElementById("totalIncome").innerText.replace(/[₩,\s]/g, "");
-      const expenseText = document.getElementById("totalExpense").innerText.replace(/[₩,\s]/g, "");
-      const remain = Number(incomeText || 0) - Number(expenseText || 0);
-      document.getElementById("remainingMoney").innerText = "₩ " + remain.toLocaleString();
-    }
-
-    function setMode(mode) {
-      currentMode = mode;
-      const recordSection = document.getElementById("recordSection");
-      const settlementSection = document.getElementById("settlementSection");
-      const recordBtn = document.getElementById("recordModeBtn");
-      const settlementBtn = document.getElementById("settlementModeBtn");
-
-      if (mode === "record") {
-        recordSection.classList.remove("hidden");
-        settlementSection.classList.add("hidden");
-        recordBtn.classList.add("active");
-        settlementBtn.classList.remove("active");
-      } else {
-        recordSection.classList.add("hidden");
-        settlementSection.classList.remove("hidden");
-        recordBtn.classList.remove("active");
-        settlementBtn.classList.add("active");
-      }
-    }
-
-    function getRecordModeCardName(item) {
-      if ((item.payment_method || "") !== "카드") return "";
-      return item.card_name || "기타카드";
-    }
-
-    function renderExpenseTabs() {
-      const cardMap = expenseTabData.cardByPerson[currentCardTab] || {};
-      const cashMap = expenseTabData.cashByPerson[currentCashTab] || {};
-
-      const cardHtml = Object.keys(cardMap).length
-        ? Object.entries(cardMap).map(([k, v]) => `${k} ₩${v.toLocaleString()}`).join("<br>")
-        : `${currentCardTab} 카드 내역 없음`;
-
-      const cashHtml = Object.keys(cashMap).length
-        ? Object.entries(cashMap).map(([k, v]) => `${k} ₩${v.toLocaleString()}`).join("<br>")
-        : `${currentCashTab} 현금/이체 내역 없음`;
-
-      document.getElementById("cardBreakdown").innerHTML = cardHtml;
-      document.getElementById("cashBreakdown").innerHTML = cashHtml;
-
-      document.getElementById("cardPersonTotal").innerText =
-        `${currentCardTab} 카드 합계: ${formatMoney(expenseTabData.cardPersonTotal[currentCardTab] || 0)}`;
-      document.getElementById("cashPersonTotal").innerText =
-        `${currentCashTab} 현금/이체 합계: ${formatMoney(expenseTabData.cashPersonTotal[currentCashTab] || 0)}`;
-
-      document.getElementById("cardTotalBottom").innerText = formatMoney(expenseTabData.cardTotal || 0);
-      document.getElementById("cashTotalBottom").innerText = formatMoney(expenseTabData.cashTotal || 0);
-
-      document.getElementById("cardTabHun").classList.toggle("active", currentCardTab === "훈");
-      document.getElementById("cardTabJju").classList.toggle("active", currentCardTab === "쭈");
-      document.getElementById("cashTabHun").classList.toggle("active", currentCashTab === "훈");
-      document.getElementById("cashTabJju").classList.toggle("active", currentCashTab === "쭈");
-    }
-
-    function setExpenseTab(type, person) {
-      if (type === "card") {
-        currentCardTab = person;
-      } else {
-        currentCashTab = person;
-      }
-      renderExpenseTabs();
-    }
-
-    async function loadSettings() {
-      const { data, error } = await supabaseClient
-        .from("app_settings")
-        .select("*")
-        .eq("id", 1)
-        .maybeSingle();
-
-      if (!error && data) {
-        currentSettlementDay = Number(data.settlement_day || 25);
-      } else {
-        currentSettlementDay = 25;
-      }
-
-      document.getElementById("settlementDayInput").value = currentSettlementDay;
-    }
-
-    async function saveSettlementDay() {
-      const value = Number(document.getElementById("settlementDayInput").value || 25);
-
-      if (!value || value < 1 || value > 31) {
-        alert("1~31 사이 숫자를 넣어주세요.");
-        return;
-      }
-
-      const { error } = await supabaseClient
-        .from("app_settings")
-        .upsert([{ id: 1, settlement_day: value }], { onConflict: "id" });
-
-      if (error) {
-        alert("정산 기준일 저장 실패: " + error.message);
-      } else {
-        currentSettlementDay = value;
-        await loadExpenses();
-        await loadSettlementSummary();
-        await loadMonthlySettlement();
-      }
-    }
-
-    async function loadExpenses() {
-      const { startString, endString } = getSelectedMonthRange();
-
-      const { data, error } = await supabaseClient
-        .from("expenses")
-        .select("*")
-        .gte("date", startString)
-        .lt("date", endString)
-        .order("date", { ascending: false })
-        .order("id", { ascending: false });
-
-      if (error) {
-        document.getElementById("expenseList").innerHTML = "불러오기 실패";
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        document.getElementById("expenseList").innerHTML = "저장된 내역이 없습니다.";
-        document.getElementById("totalExpense").innerText = "₩ 0";
-        document.getElementById("cardExpense").innerText = "₩ 0";
-        document.getElementById("cashExpense").innerText = "₩ 0";
-        document.getElementById("nextCardExpense").innerText = "₩ 0";
-        document.getElementById("nextCardExpenseRange").innerText = "카드 기준일 반영";
-        document.getElementById("personSummary").innerHTML = "저장된 내역이 없습니다.";
-        document.getElementById("expenseBreakdown").innerText = "훈카드 ₩0 / 훈현금 ₩0 / 쭈카드 ₩0 / 쭈현금 ₩0";
-
-        expenseTabData = {
-          cardTotal: 0,
-          cashTotal: 0,
-          cardByPerson: { "훈": {}, "쭈": {} },
-          cashByPerson: { "훈": {}, "쭈": {} },
-          cardPersonTotal: { "훈": 0, "쭈": 0 },
-          cashPersonTotal: { "훈": 0, "쭈": 0 }
-        };
-        renderExpenseTabs();
-
-        updateRemaining();
-        return;
-      }
-
-      let total = 0;
-      let cardTotal = 0;
-      let cashTotal = 0;
-
-      const personTotals = { "훈": 0, "쭈": 0, "채원": 0, "나은": 0, "기타": 0 };
-      const payerBreakdown = { "훈카드": 0, "훈현금": 0, "쭈카드": 0, "쭈현금": 0 };
-
-      const cardByPerson = { "훈": {}, "쭈": {} };
-      const cashByPerson = { "훈": {}, "쭈": {} };
-      const cardPersonTotal = { "훈": 0, "쭈": 0 };
-      const cashPersonTotal = { "훈": 0, "쭈": 0 };
-
-      let html = "";
-
-      data.forEach((item) => {
-        const amt = Number(item.amount || 0);
-        const person = item.person || "기타";
-        const payment = item.payment_method || "현금";
-        const cardName = getRecordModeCardName(item);
-
-        total += amt;
-
-        if (personTotals[person] !== undefined) {
-          personTotals[person] += amt;
-        }
-
-        if (payment === "카드") {
-          cardTotal += amt;
-
-          if (person === "훈") {
-            payerBreakdown["훈카드"] += amt;
-            const key = cardName || "기타카드";
-            cardByPerson["훈"][key] = (cardByPerson["훈"][key] || 0) + amt;
-            cardPersonTotal["훈"] += amt;
-          }
-
-          if (person === "쭈") {
-            payerBreakdown["쭈카드"] += amt;
-            const key = cardName || "기타카드";
-            cardByPerson["쭈"][key] = (cardByPerson["쭈"][key] || 0) + amt;
-            cardPersonTotal["쭈"] += amt;
-          }
-        } else {
-          cashTotal += amt;
-
-          if (person === "훈") {
-            payerBreakdown["훈현금"] += amt;
-            const key = payment;
-            cashByPerson["훈"][key] = (cashByPerson["훈"][key] || 0) + amt;
-            cashPersonTotal["훈"] += amt;
-          }
-
-          if (person === "쭈") {
-            payerBreakdown["쭈현금"] += amt;
-            const key = payment;
-            cashByPerson["쭈"][key] = (cashByPerson["쭈"][key] || 0) + amt;
-            cashPersonTotal["쭈"] += amt;
-          }
-        }
-
-        html += `
-          <div class="line">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-              <strong>${amt.toLocaleString()}원</strong>
-              <button class="small-btn danger-btn" onclick="deleteExpense(${item.id})">삭제</button>
-            </div>
-            <div class="sub">
-              ${item.date || "-"} / ${payment}${payment === "카드" ? " / " + (cardName || "기타카드") : ""} / ${person} / ${item.memo || ""}
-            </div>
-          </div>
-        `;
-      });
-
-      expenseTabData = {
-        cardTotal,
-        cashTotal,
-        cardByPerson,
-        cashByPerson,
-        cardPersonTotal,
-        cashPersonTotal
-      };
-
-      const settlementRange = getNextCardEstimateRange();
-
-      const { data: billingCardData, error: billingError } = await supabaseClient
-        .from("expenses")
-        .select("*")
-        .eq("payment_method", "카드")
-        .gte("date", settlementRange.startString)
-        .lte("date", settlementRange.endString);
-
-      let nextCardTotal = 0;
-      if (!billingError && billingCardData) {
-        billingCardData.forEach(item => {
-          nextCardTotal += Number(item.amount || 0);
-        });
-      }
-
-      document.getElementById("expenseList").innerHTML = html;
-      document.getElementById("totalExpense").innerText = "₩ " + total.toLocaleString();
-      document.getElementById("cardExpense").innerText = "₩ " + cardTotal.toLocaleString();
-      document.getElementById("cashExpense").innerText = "₩ " + cashTotal.toLocaleString();
-      document.getElementById("nextCardExpense").innerText = "₩ " + nextCardTotal.toLocaleString();
-      document.getElementById("nextCardExpenseRange").innerText =
-        `${settlementRange.startString} ~ ${settlementRange.endString} 카드 사용분`;
-
-      document.getElementById("expenseBreakdown").innerHTML =
-        `훈카드 ₩${payerBreakdown["훈카드"].toLocaleString()} / 훈현금 ₩${payerBreakdown["훈현금"].toLocaleString()}<br>` +
-        `쭈카드 ₩${payerBreakdown["쭈카드"].toLocaleString()} / 쭈현금 ₩${payerBreakdown["쭈현금"].toLocaleString()}`;
-
-      document.getElementById("personSummary").innerHTML = `
-        <div class="line">훈: ₩ ${personTotals["훈"].toLocaleString()}</div>
-        <div class="line">쭈: ₩ ${personTotals["쭈"].toLocaleString()}</div>
-        <div class="line">채원: ₩ ${personTotals["채원"].toLocaleString()}</div>
-        <div class="line">나은: ₩ ${personTotals["나은"].toLocaleString()}</div>
-        <div style="padding-top:10px;">기타: ₩ ${personTotals["기타"].toLocaleString()}</div>
-      `;
-
-      renderExpenseTabs();
-      updateRemaining();
-    }
-
-    async function saveExpense() {
-      const dateValue = document.getElementById("expenseDate").value || getTodayString();
-      const amount = document.getElementById("amount").value;
-      const payment = document.getElementById("payment").value;
-      const person = document.getElementById("person").value;
-      const memo = document.getElementById("memo").value;
-      const cardName = document.getElementById("expenseCardName").value;
-
-      if (!amount) {
-        alert("금액을 입력하세요");
-        return;
-      }
-
-      const { error } = await supabaseClient
-        .from("expenses")
-        .insert([{
-          date: dateValue,
-          amount: Number(amount),
-          payment_method: payment,
-          card_name: payment === "카드" ? cardName : "",
-          person: person,
-          memo: memo,
-          fixed_expense_id: null
-        }]);
-
-      if (error) {
-        alert("저장 실패: " + error.message);
-      } else {
-        document.getElementById("amount").value = "";
-        document.getElementById("memo").value = "";
-        document.getElementById("expenseCardName").value = "";
-        await loadExpenses();
-        await loadCalendar();
-        await loadSettlementSummary();
-      }
-    }
-
-    async function deleteExpense(id) {
-      const ok = confirm("삭제할까요?");
-      if (!ok) return;
-
-      const { error } = await supabaseClient
-        .from("expenses")
-        .delete()
-        .eq("id", id);
-
-      if (error) {
-        alert("삭제 실패: " + error.message);
-      } else {
-        await loadExpenses();
-        await loadCalendar();
-        await loadSettlementSummary();
-      }
-    }
-
-    async function loadIncome() {
-      const { startString, endString } = getSelectedMonthRange();
-
-      const { data, error } = await supabaseClient
-        .from("income")
-        .select("*")
-        .gte("date", startString)
-        .lt("date", endString)
-        .order("date", { ascending: false })
-        .order("id", { ascending: false });
-
-      if (error) {
-        document.getElementById("incomeList").innerHTML = "수입 불러오기 실패";
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        document.getElementById("incomeList").innerHTML = "저장된 수입이 없습니다.";
-        document.getElementById("totalIncome").innerText = "₩ 0";
-        document.getElementById("incomeBreakdown").innerText = "훈 ₩0 / 쭈 ₩0 / 기타 ₩0";
-        updateRemaining();
-        return;
-      }
-
-      let total = 0;
-      const incomeMap = { "훈": 0, "쭈": 0, "기타": 0 };
-      let html = "";
-
-      data.forEach((item) => {
-        const amt = Number(item.amount || 0);
-        const person = item.person || "기타";
-        total += amt;
-
-        if (incomeMap[person] !== undefined) {
-          incomeMap[person] += amt;
-        } else {
-          incomeMap["기타"] += amt;
-        }
-
-        html += `
-          <div class="line">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-              <strong>${amt.toLocaleString()}원</strong>
-              <button class="small-btn danger-btn" onclick="deleteIncome(${item.id})">삭제</button>
-            </div>
-            <div class="sub">
-              ${item.date || "-"} / ${person} / ${item.memo || ""}
-            </div>
-          </div>
-        `;
-      });
-
-      document.getElementById("incomeList").innerHTML = html;
-      document.getElementById("totalIncome").innerText = "₩ " + total.toLocaleString();
-      document.getElementById("incomeBreakdown").innerHTML =
-        `훈 ₩${incomeMap["훈"].toLocaleString()} / 쭈 ₩${incomeMap["쭈"].toLocaleString()} / 기타 ₩${incomeMap["기타"].toLocaleString()}`;
-      updateRemaining();
-    }
-
-    async function saveIncome() {
-      const dateValue = document.getElementById("incomeDate").value || getTodayString();
-      const amount = document.getElementById("incomeAmount").value;
-      const person = document.getElementById("incomePerson").value;
-      const memo = document.getElementById("incomeMemo").value;
-
-      if (!amount) {
-        alert("금액 입력");
-        return;
-      }
-
-      const { error } = await supabaseClient
-        .from("income")
-        .insert([{
-          date: dateValue,
-          amount: Number(amount),
-          person: person,
-          memo: memo
-        }]);
-
-      if (error) {
-        alert("수입 저장 실패: " + error.message);
-      } else {
-        document.getElementById("incomeAmount").value = "";
-        document.getElementById("incomeMemo").value = "";
-        await loadIncome();
-        await loadSettlementSummary();
-      }
-    }
-
-    async function deleteIncome(id) {
-      const ok = confirm("수입 내역을 삭제할까요?");
-      if (!ok) return;
-
-      const { error } = await supabaseClient
-        .from("income")
-        .delete()
-        .eq("id", id);
-
-      if (error) {
-        alert("수입 삭제 실패: " + error.message);
-      } else {
-        await loadIncome();
-        await loadSettlementSummary();
-      }
-    }
-
-    async function loadFixedExpenses() {
-      const { data, error } = await supabaseClient
-        .from("fixed_expenses")
-        .select("*")
-        .order("day", { ascending: true })
-        .order("id", { ascending: true });
-
-      if (error) {
-        document.getElementById("fixedList").innerHTML = "고정지출 불러오기 실패";
-        return;
-      }
-
-      fixedExpenseCache = {};
-      if (!data || data.length === 0) {
-        document.getElementById("fixedList").innerHTML = "등록된 고정지출이 없습니다.";
-        return;
-      }
-
-      let html = "";
-
-      data.forEach((item) => {
-        fixedExpenseCache[item.id] = item;
-
-        html += `
-          <div class="line">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-              <strong>매달 ${item.day}일 / ${item.name}</strong>
-              <div class="inline-actions">
-                <button class="small-btn" onclick="editFixedExpense(${item.id})">수정</button>
-                <button class="small-btn danger-btn" onclick="deleteFixedExpense(${item.id})">삭제</button>
-              </div>
-            </div>
-            <div class="sub">
-              ${item.person || "-"} / ${item.payment_method || "-"}${item.payment_method === "카드" ? " / " + (item.card_name || "기타카드") : ""} / ₩${Number(item.amount || 0).toLocaleString()} / ${item.memo || ""}
-              ${item.is_active ? "" : "<br>사용안함"}
-            </div>
-          </div>
-        `;
-      });
-
-      document.getElementById("fixedList").innerHTML = html;
-    }
-
-    function editFixedExpense(id) {
-      const item = fixedExpenseCache[id];
-      if (!item) return;
-
-      document.getElementById("fixedId").value = item.id;
-      document.getElementById("fixedName").value = item.name || "";
-      document.getElementById("fixedAmount").value = item.amount || "";
-      document.getElementById("fixedDay").value = item.day || "";
-      document.getElementById("fixedPayment").value = item.payment_method || "카드";
-      document.getElementById("fixedCardName").value = item.card_name || "";
-      document.getElementById("fixedPerson").value = item.person || "훈";
-      document.getElementById("fixedMemo").value = item.memo || "";
-      document.getElementById("fixedActive").checked = !!item.is_active;
-      document.getElementById("fixedSaveBtn").innerText = "고정지출 수정";
-
-      const formCard = document.getElementById("fixedExpenseFormCard");
-      if (formCard) {
-        formCard.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-
-      setTimeout(() => {
-        document.getElementById("fixedName").focus();
-      }, 300);
-    }
-
-    function resetFixedForm() {
-      document.getElementById("fixedId").value = "";
-      document.getElementById("fixedName").value = "";
-      document.getElementById("fixedAmount").value = "";
-      document.getElementById("fixedDay").value = "";
-      document.getElementById("fixedPayment").value = "카드";
-      document.getElementById("fixedCardName").value = "";
-      document.getElementById("fixedPerson").value = "훈";
-      document.getElementById("fixedMemo").value = "";
-      document.getElementById("fixedActive").checked = true;
-      document.getElementById("fixedSaveBtn").innerText = "고정지출 저장";
-    }
-
-    function getDateStringFromMonthAndDay(year, month, day) {
-      const lastDay = new Date(year, month, 0).getDate();
-      const safeDay = Math.min(Number(day), lastDay);
-      const y = String(year);
-      const m = String(month).padStart(2, "0");
-      const d = String(safeDay).padStart(2, "0");
-      return `${y}-${m}-${d}`;
-    }
-
-    async function syncFixedExpenseToSelectedMonth(fixedExpenseId) {
-      const { year, month, startString, endString } = getSelectedMonthRange();
-
-      const { data: fixedItem, error: fixedError } = await supabaseClient
-        .from("fixed_expenses")
-        .select("*")
-        .eq("id", fixedExpenseId)
-        .maybeSingle();
-
-      if (fixedError || !fixedItem) {
-        alert("고정지출 동기화 실패");
-        return;
-      }
-
-      const expenseDate = getDateStringFromMonthAndDay(year, month, fixedItem.day);
-
-      const { data: existingItem, error: existingError } = await supabaseClient
-        .from("expenses")
-        .select("*")
-        .eq("fixed_expense_id", fixedExpenseId)
-        .gte("date", startString)
-        .lt("date", endString)
-        .maybeSingle();
-
-      if (existingError) {
-        alert("기존 고정지출 확인 실패: " + existingError.message);
-        return;
-      }
-
-      const payload = {
-        date: expenseDate,
-        amount: Number(fixedItem.amount || 0),
-        payment_method: fixedItem.payment_method || "현금",
-        card_name: fixedItem.payment_method === "카드" ? (fixedItem.card_name || "") : "",
-        person: fixedItem.person || "기타",
-        memo: fixedItem.memo ? `${fixedItem.name} / ${fixedItem.memo}` : fixedItem.name,
-        fixed_expense_id: fixedItem.id
-      };
-
-      if (existingItem) {
-        const { error: updateError } = await supabaseClient
-          .from("expenses")
-          .update(payload)
-          .eq("id", existingItem.id);
-
-        if (updateError) {
-          alert("고정지출 월 반영 수정 실패: " + updateError.message);
-          return;
-        }
-      } else {
-        const { error: insertError } = await supabaseClient
-          .from("expenses")
-          .insert([payload]);
-
-        if (insertError) {
-          alert("고정지출 월 반영 실패: " + insertError.message);
-          return;
-        }
-      }
-    }
-
-    async function saveOrUpdateFixedExpense() {
-      const id = document.getElementById("fixedId").value;
-      const name = document.getElementById("fixedName").value;
-      const amount = document.getElementById("fixedAmount").value;
-      const day = document.getElementById("fixedDay").value;
-      const paymentMethod = document.getElementById("fixedPayment").value;
-      const cardName = document.getElementById("fixedCardName").value;
-      const person = document.getElementById("fixedPerson").value;
-      const memo = document.getElementById("fixedMemo").value;
-      const isActive = document.getElementById("fixedActive").checked;
-
-      if (!name || !amount || !day) {
-        alert("이름, 금액, 날짜를 입력하세요");
-        return;
-      }
-
-      const payload = {
-        name,
-        amount: Number(amount),
-        day: Number(day),
-        payment_method: paymentMethod,
-        card_name: paymentMethod === "카드" ? cardName : "",
-        person,
-        memo,
-        is_active: isActive
-      };
-
-      let savedId = null;
-
-      if (id) {
-        const { error } = await supabaseClient
-          .from("fixed_expenses")
-          .update(payload)
-          .eq("id", id);
-
-        if (error) {
-          alert("고정지출 수정 실패: " + error.message);
-          return;
-        }
-
-        savedId = Number(id);
-      } else {
-        const { data, error } = await supabaseClient
-          .from("fixed_expenses")
-          .insert([payload])
-          .select("id")
-          .maybeSingle();
-
-        if (error) {
-          alert("고정지출 저장 실패: " + error.message);
-          return;
-        }
-
-        if (!data || !data.id) {
-          alert("고정지출 저장은 되었지만 id를 읽지 못했어요. 새로고침 후 다시 확인해주세요.");
-          await loadFixedExpenses();
-          return;
-        }
-
-        savedId = data.id;
-      }
-
-      if (savedId && isActive) {
-        await syncFixedExpenseToSelectedMonth(savedId);
-      }
-
-      resetFixedForm();
-      await loadFixedExpenses();
-      await loadExpenses();
-      await loadCalendar();
-      await loadSettlementSummary();
-    }
-
-    async function deleteFixedExpense(id) {
-      const ok = confirm("고정지출을 삭제할까요?\n선택한 달에 불러온 내역도 함께 지울까요?");
-      if (!ok) return;
-
-      const { startString, endString } = getSelectedMonthRange();
-
-      const { error: expenseDeleteError } = await supabaseClient
-        .from("expenses")
-        .delete()
-        .eq("fixed_expense_id", id)
-        .gte("date", startString)
-        .lt("date", endString);
-
-      if (expenseDeleteError) {
-        alert("선택한 달 반영내역 삭제 실패: " + expenseDeleteError.message);
-        return;
-      }
-
-      const { error } = await supabaseClient
-        .from("fixed_expenses")
-        .delete()
-        .eq("id", id);
-
-      if (error) {
-        alert("고정지출 삭제 실패: " + error.message);
-      } else {
-        await loadFixedExpenses();
-        await loadExpenses();
-        await loadCalendar();
-        await loadSettlementSummary();
-      }
-    }
-
-    async function importFixedExpenses() {
-      const { year, month, startString, endString, monthValue } = getSelectedMonthRange();
-
-      const { data: fixedItems, error: fixedError } = await supabaseClient
-        .from("fixed_expenses")
-        .select("*")
-        .eq("is_active", true);
-
-      if (fixedError) {
-        alert("고정지출 불러오기 실패: " + fixedError.message);
-        return;
-      }
-
-      if (!fixedItems || fixedItems.length === 0) {
-        alert("불러올 고정지출이 없습니다.");
-        return;
-      }
-
-      const { data: existingItems, error: existingError } = await supabaseClient
-        .from("expenses")
-        .select("id, fixed_expense_id")
-        .gte("date", startString)
-        .lt("date", endString)
-        .not("fixed_expense_id", "is", null);
-
-      if (existingError) {
-        alert("중복 확인 실패: " + existingError.message);
-        return;
-      }
-
-      const existingMap = {};
-      (existingItems || []).forEach(item => {
-        existingMap[item.fixed_expense_id] = item.id;
-      });
-
-      let insertRows = [];
-      let updateCount = 0;
-
-      for (const item of fixedItems) {
-        const payload = {
-          date: getDateStringFromMonthAndDay(year, month, item.day),
-          amount: Number(item.amount || 0),
-          payment_method: item.payment_method || "현금",
-          card_name: item.payment_method === "카드" ? (item.card_name || "") : "",
-          person: item.person || "기타",
-          memo: item.memo ? `${item.name} / ${item.memo}` : item.name,
-          fixed_expense_id: item.id
-        };
-
-        if (existingMap[item.id]) {
-          const { error: updateError } = await supabaseClient
-            .from("expenses")
-            .update(payload)
-            .eq("id", existingMap[item.id]);
-
-          if (updateError) {
-            alert("고정지출 업데이트 실패: " + updateError.message);
-            return;
-          }
-          updateCount++;
-        } else {
-          insertRows.push(payload);
-        }
-      }
-
-      if (insertRows.length > 0) {
-        const { error: insertError } = await supabaseClient
-          .from("expenses")
-          .insert(insertRows);
-
-        if (insertError) {
-          alert("고정지출 불러오기 실패: " + insertError.message);
-          return;
-        }
-      }
-
-      alert(`${monthValue}에 신규 ${insertRows.length}건, 수정 ${updateCount}건 반영했어요.`);
-      await loadExpenses();
-      await loadCalendar();
-      await loadSettlementSummary();
-    }
-
-    async function loadCalendar() {
-      const { year, month, startString, endString } = getSelectedMonthRange();
-
-      const { data, error } = await supabaseClient
-        .from("expenses")
-        .select("*")
-        .gte("date", startString)
-        .lt("date", endString);
-
-      if (error) {
-        document.getElementById("monthCalendar").innerHTML = "달력 불러오기 실패";
-        return;
-      }
-
-      const byDate = {};
-      (data || []).forEach(item => {
-        const date = item.date;
-        if (!byDate[date]) byDate[date] = [];
-        byDate[date].push(item);
-      });
-
-      const firstDate = new Date(year, month - 1, 1);
-      const firstDay = firstDate.getDay();
-      const daysInMonth = new Date(year, month, 0).getDate();
-      const weekNames = ["일", "월", "화", "수", "목", "금", "토"];
-
-      let html = `
-        <div class="calendar-grid" style="margin-bottom:8px;">
-          ${weekNames.map(day => `<div class="week-name">${day}</div>`).join("")}
-        </div>
-        <div class="calendar-grid">
-      `;
-
-      for (let i = 0; i < firstDay; i++) {
-        html += `<div></div>`;
-      }
-
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dateString = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-        let inner = `<div style="font-weight:700;">${day}</div>`;
-
-        if (byDate[dateString]) {
-          const cardMap = {};
-          const cashMap = {};
-
-          byDate[dateString].forEach(item => {
-            const amt = Number(item.amount || 0);
-            const payment = item.payment_method || "현금";
-
-            if (payment === "카드") {
-              const cardName = item.card_name || "기타카드";
-              cardMap[cardName] = (cardMap[cardName] || 0) + amt;
-            } else {
-              const key = payment;
-              cashMap[key] = (cashMap[key] || 0) + amt;
-            }
-          });
-
-          inner += `<div class="sub">`;
-          Object.entries(cardMap).forEach(([k, v]) => {
-            inner += `<div>${k} ₩${v.toLocaleString()}</div>`;
-          });
-          Object.entries(cashMap).forEach(([k, v]) => {
-            inner += `<div>${k} ₩${v.toLocaleString()}</div>`;
-          });
-          inner += `</div>`;
-        }
-
-        html += `<div class="calendar-cell">${inner}</div>`;
-      }
-
-      html += `</div>`;
-      document.getElementById("monthCalendar").innerHTML = html;
-    }
-
-    async function loadSettlementSummary() {
-      const { startString, endString, monthValue } = getSettlementRange();
-
-      document.getElementById("settlementRangeLabel").innerText =
-        `${monthValue} 정산기간: ${startString} ~ ${endString} (기준일 ${currentSettlementDay}일)`;
-
-      const incomeResult = await supabaseClient
-        .from("income")
-        .select("*")
-        .gte("date", startString)
-        .lte("date", endString);
-
-      const expenseResult = await supabaseClient
-        .from("expenses")
-        .select("*")
-        .gte("date", startString)
-        .lte("date", endString);
-
-      if (incomeResult.error || expenseResult.error) {
-        document.getElementById("settlementSummary").innerHTML = "정산 불러오기 실패";
-        document.getElementById("settlementCardBreakdown").innerHTML = "정산 불러오기 실패";
-        return;
-      }
-
-      const incomes = incomeResult.data || [];
-      const expenses = expenseResult.data || [];
-
-      let hunIncome = 0;
-      let jjuIncome = 0;
-      let otherIncome = 0;
-
-      incomes.forEach(item => {
-        const amt = Number(item.amount || 0);
-        if (item.person === "훈") hunIncome += amt;
-        else if (item.person === "쭈") jjuIncome += amt;
-        else otherIncome += amt;
-      });
-
-      let fixedCashTotal = 0;
-      let fixedCardTotal = 0;
-      let totalCard = 0;
-      let totalExpense = 0;
-
-      let hunCash = 0;
-      let hunCard = 0;
-      let jjuCash = 0;
-      let jjuCard = 0;
-
-      const settlementCardMap = {};
-
-      expenses.forEach(item => {
-        const amt = Number(item.amount || 0);
-        const payment = item.payment_method || "현금";
-        const person = item.person || "기타";
-        const isFixed = item.fixed_expense_id !== null && item.fixed_expense_id !== undefined;
-
-        totalExpense += amt;
-
-        if (payment === "카드") {
-          totalCard += amt;
-
-          const cardName = item.card_name || "기타카드";
-          settlementCardMap[cardName] = (settlementCardMap[cardName] || 0) + amt;
-
-          if (isFixed) fixedCardTotal += amt;
-        } else {
-          if (isFixed) fixedCashTotal += amt;
-        }
-
-        if (person === "훈") {
-          if (payment === "카드") hunCard += amt;
-          else hunCash += amt;
-        }
-
-        if (person === "쭈") {
-          if (payment === "카드") jjuCard += amt;
-          else jjuCash += amt;
-        }
-      });
-
-      const totalIncome = hunIncome + jjuIncome + otherIncome;
-      const hunBaseBurden = fixedCashTotal + totalCard;
-      const hunActualPay = Math.min(hunIncome, hunBaseBurden);
-      const hunShortage = Math.max(0, hunBaseBurden - hunIncome);
-      const jjuSupport = hunShortage;
-      const finalLivingPool = totalIncome - hunBaseBurden;
-      const afterAllExpense = totalIncome - totalExpense;
-
-      document.getElementById("settlementTotalIncome").innerText = formatMoney(totalIncome);
-      document.getElementById("settlementHunBaseBurden").innerText = formatMoney(hunBaseBurden);
-      document.getElementById("settlementJjuSupport").innerText = formatMoney(jjuSupport);
-      document.getElementById("settlementFinalLivingPool").innerText = formatMoney(finalLivingPool);
-
-      document.getElementById("settlementSummary").innerHTML = `
-        <div class="line"><strong>훈 수입:</strong> ${formatMoney(hunIncome)}</div>
-        <div class="line"><strong>쭈 수입:</strong> ${formatMoney(jjuIncome)}</div>
-        <div class="line"><strong>기타 수입:</strong> ${formatMoney(otherIncome)}</div>
-        <div class="line"><strong>총 수입:</strong> ${formatMoney(totalIncome)}</div>
-
-        <div class="line"><strong>고정지출 현금/계좌이체 총액:</strong> ${formatMoney(fixedCashTotal)}</div>
-        <div class="line"><strong>고정지출 카드 총액:</strong> ${formatMoney(fixedCardTotal)}</div>
-        <div class="line"><strong>이번 정산기간 카드값 총액:</strong> ${formatMoney(totalCard)}</div>
-
-        <div class="line">
-          <strong>훈이 먼저 부담할 금액</strong><br>
-          <span class="muted">고정지출 현금/계좌이체 + 이번 정산기간 카드값 총액</span><br>
-          ${formatMoney(hunBaseBurden)}
-        </div>
-
-        <div class="line"><strong>훈 실제 부담 가능 금액:</strong> ${formatMoney(hunActualPay)}</div>
-        <div class="line"><strong>훈 수입 부족분:</strong> ${formatMoney(hunShortage)}</div>
-        <div class="line"><strong>쭈가 메운 금액:</strong> ${formatMoney(jjuSupport)}</div>
-
-        <div class="line">
-          <strong class="pink-strong">최종 생활비</strong><br>
-          <span class="muted">총수입 - 훈이 먼저 부담할 금액</span><br>
-          <strong class="summary-strong">${formatMoney(finalLivingPool)}</strong>
-        </div>
-
-        <div class="line">
-          <strong>참고: 전체 지출까지 반영한 순잔액</strong><br>
-          <span class="muted">총수입 - 전체 지출</span><br>
-          ${formatMoney(afterAllExpense)}
-        </div>
-
-        <div class="line"><strong>참고용 사람별 지출</strong><br>
-          <span class="muted">
-            훈 현금/계좌이체 ${formatMoney(hunCash)} / 훈 카드 ${formatMoney(hunCard)}<br>
-            쭈 현금/계좌이체 ${formatMoney(jjuCash)} / 쭈 카드 ${formatMoney(jjuCard)}
-          </span>
-        </div>
-      `;
-
-      const cardBreakdownHtml = Object.keys(settlementCardMap).length
-        ? Object.entries(settlementCardMap)
-            .sort((a, b) => b[1] - a[1])
-            .map(([cardName, amt]) => `<div class="line"><strong>${cardName}</strong> ${formatMoney(amt)}</div>`)
-            .join("")
-        : "해당 기간 카드내역이 없습니다.";
-
-      document.getElementById("settlementCardBreakdown").innerHTML = cardBreakdownHtml;
-    }
-
-    async function saveMonthlySettlement() {
-      const { startString, endString, monthValue } = getSettlementRange();
-
-      const incomeResult = await supabaseClient
-        .from("income")
-        .select("*")
-        .gte("date", startString)
-        .lte("date", endString);
-
-      const expenseResult = await supabaseClient
-        .from("expenses")
-        .select("*")
-        .gte("date", startString)
-        .lte("date", endString);
-
-      if (incomeResult.error || expenseResult.error) {
-        alert("마감 저장용 데이터 불러오기 실패");
-        return;
-      }
-
-      const incomes = incomeResult.data || [];
-      const expenses = expenseResult.data || [];
-
-      let hunIncome = 0;
-      let jjuIncome = 0;
-      let otherIncome = 0;
-
-      incomes.forEach(item => {
-        const amt = Number(item.amount || 0);
-        if (item.person === "훈") hunIncome += amt;
-        else if (item.person === "쭈") jjuIncome += amt;
-        else otherIncome += amt;
-      });
-
-      let fixedCashTotal = 0;
-      let fixedCardTotal = 0;
-      let totalCard = 0;
-      let totalExpense = 0;
-      const settlementCardMap = {};
-
-      expenses.forEach(item => {
-        const amt = Number(item.amount || 0);
-        const payment = item.payment_method || "현금";
-        const isFixed = item.fixed_expense_id !== null && item.fixed_expense_id !== undefined;
-
-        totalExpense += amt;
-
-        if (payment === "카드") {
-          totalCard += amt;
-          const cardName = item.card_name || "기타카드";
-          settlementCardMap[cardName] = (settlementCardMap[cardName] || 0) + amt;
-
-          if (isFixed) fixedCardTotal += amt;
-        } else {
-          if (isFixed) fixedCashTotal += amt;
-        }
-      });
-
-      const totalIncome = hunIncome + jjuIncome + otherIncome;
-      const hunBaseBurden = fixedCashTotal + totalCard;
-      const hunActualPay = Math.min(hunIncome, hunBaseBurden);
-      const hunShortage = Math.max(0, hunBaseBurden - hunIncome);
-      const jjuSupport = hunShortage;
-      const finalLivingPool = totalIncome - hunBaseBurden;
-      const afterAllExpense = totalIncome - totalExpense;
-
-      const payload = {
-        month_key: monthValue,
-        settlement_start: startString,
-        settlement_end: endString,
-        settlement_day: Number(currentSettlementDay || 25),
-        hun_income: hunIncome,
-        jju_income: jjuIncome,
-        other_income: otherIncome,
-        total_income: totalIncome,
-        fixed_cash_total: fixedCashTotal,
-        fixed_card_total: fixedCardTotal,
-        total_card: totalCard,
-        total_expense: totalExpense,
-        hun_actual_pay: hunActualPay,
-        hun_shortage: hunShortage,
-        jju_support: jjuSupport,
-        final_living_pool: finalLivingPool,
-        after_all_expense: afterAllExpense,
-        settlement_card_breakdown: settlementCardMap,
-        updated_at: new Date().toISOString()
-      };
-
-      const { error } = await supabaseClient
-        .from("monthly_settlements")
-        .upsert([payload], { onConflict: "month_key" });
-
-      if (error) {
-        alert("월 마감 저장 실패: " + error.message);
-        return;
-      }
-
-      document.getElementById("monthlySettlementStatus").innerText =
-        `${monthValue} 마감 저장 완료`;
-      await loadMonthlySettlement();
-      alert(`${monthValue} 정산을 마감 저장했어요.`);
-    }
-
-    async function loadMonthlySettlement() {
-      const { monthValue } = getSelectedMonthRange();
-
-      const { data, error } = await supabaseClient
-        .from("monthly_settlements")
-        .select("*")
-        .eq("month_key", monthValue)
-        .maybeSingle();
-
-      if (error) {
-        document.getElementById("savedSettlementSummary").innerHTML = "저장된 월 마감 불러오기 실패";
-        return;
-      }
-
-      if (!data) {
-        document.getElementById("monthlySettlementStatus").innerText =
-          `${monthValue}는 아직 마감 저장된 결과가 없습니다.`;
-        document.getElementById("savedSettlementSummary").innerHTML =
-          "저장된 월 마감 결과가 없습니다.";
-        return;
-      }
-
-      document.getElementById("monthlySettlementStatus").innerText =
-        `${monthValue} 마감 결과가 저장되어 있습니다.`;
-
-      const cardMap = data.settlement_card_breakdown || {};
-      const cardBreakdownHtml = Object.keys(cardMap).length
-        ? Object.entries(cardMap)
-            .sort((a, b) => b[1] - a[1])
-            .map(([cardName, amt]) => `<div class="line"><strong>${cardName}</strong> ${formatMoney(amt)}</div>`)
-            .join("")
-        : `<div class="line">카드 내역 없음</div>`;
-
-      document.getElementById("savedSettlementSummary").innerHTML = `
-        <div class="line"><strong>정산기간:</strong> ${data.settlement_start} ~ ${data.settlement_end}</div>
-        <div class="line"><strong>훈 수입:</strong> ${formatMoney(data.hun_income)}</div>
-        <div class="line"><strong>쭈 수입:</strong> ${formatMoney(data.jju_income)}</div>
-        <div class="line"><strong>기타 수입:</strong> ${formatMoney(data.other_income)}</div>
-        <div class="line"><strong>총 수입:</strong> ${formatMoney(data.total_income)}</div>
-        <div class="line"><strong>고정지출 현금/계좌이체:</strong> ${formatMoney(data.fixed_cash_total)}</div>
-        <div class="line"><strong>고정지출 카드:</strong> ${formatMoney(data.fixed_card_total)}</div>
-        <div class="line"><strong>정산기간 카드값 총액:</strong> ${formatMoney(data.total_card)}</div>
-        <div class="line"><strong>훈 실제 부담 가능 금액:</strong> ${formatMoney(data.hun_actual_pay)}</div>
-        <div class="line"><strong>훈 부족분:</strong> ${formatMoney(data.hun_shortage)}</div>
-        <div class="line"><strong>쭈가 메운 금액:</strong> ${formatMoney(data.jju_support)}</div>
-        <div class="line"><strong class="pink-strong">최종 생활비:</strong> ${formatMoney(data.final_living_pool)}</div>
-        <div class="line"><strong>전체 지출 반영 순잔액:</strong> ${formatMoney(data.after_all_expense)}</div>
-        <div class="line">
-          <strong>저장된 카드별 합계</strong>
-          <div class="sub">${cardBreakdownHtml}</div>
-        </div>
-      `;
-    }
-
-    async function applySelectedMonth() {
-      updateSelectedMonthLabel();
-      await loadExpenses();
-      await loadIncome();
-      await loadCalendar();
-      await loadSettlementSummary();
-      await loadMonthlySettlement();
-    }
-
-    setDefaultDates();
-    updateSelectedMonthLabel();
-    setMode("record");
-
-    loadSettings().then(async () => {
-      await loadExpenses();
-      await loadIncome();
-      await loadFixedExpenses();
-      await loadCalendar();
-      await loadSettlementSummary();
-      await loadMonthlySettlement();
-    });
-  </script>
-</body>
-</html>
+      const incomeText = document.getElement
