@@ -594,6 +594,40 @@
     </div>
   </div>
 
+<div class="card">
+  <h3>🍳 요리 레시피</h3>
+
+  <div class="row">
+    <input id="recipeTitle" placeholder="요리 제목" />
+    <select id="recipeCategory" style="max-width:220px;">
+      <option value="국">국</option>
+      <option value="반찬">반찬</option>
+      <option value="메인요리">메인요리</option>
+      <option value="기타">기타</option>
+      <option value="볶음">볶음</option>
+      <option value="찌개">찌개</option>
+      <option value="면">면</option>
+      <option value="아이반찬">아이반찬</option>
+      <option value="냉장고털이">냉장고털이</option>
+    </select>
+  </div>
+
+  <br />
+
+  <textarea id="recipeMemo"
+    placeholder="재료 / 조리법 / 유튜브 링크 / 메모"
+    style="width:100%; min-height:180px; padding:12px; border:1px solid #eadbe1; border-radius:12px; box-sizing:border-box;"></textarea>
+
+  <br /><br />
+  <button class="primary-btn" onclick="saveRecipe()">등록하기</button>
+</div>
+
+<div class="card">
+  <h3>📖 레시피 목록</h3>
+  <div id="recipeList">불러오는 중...</div>
+</div>
+
+  
   <div id="settlementSection" class="hidden">
     <div class="card">
       <h3>정산 기준 설정</h3>
@@ -665,7 +699,7 @@
     let fixedExpenseCache = {};
     let currentCardTab = "훈";
     let currentCashTab = "훈";
-
+let recipeData = [];
     let expenseTabData = {
       cardTotal: 0,
       cashTotal: 0,
@@ -1930,7 +1964,66 @@
       await loadCalendar();
       await loadSettlementSummary();
       await loadMonthlySettlement();
+      await loadRecipes();
     });
+async function saveRecipe() {
+  const title = document.getElementById("recipeTitle").value.trim();
+  const memo = document.getElementById("recipeMemo").value.trim();
+  const category = document.getElementById("recipeCategory").value;
+
+  if (!title) {
+    alert("제목을 입력하세요");
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("recipes")
+    .insert([{ title, memo, category }]);
+
+  if (error) {
+    alert("저장 실패: " + error.message);
+    return;
+  }
+
+  document.getElementById("recipeTitle").value = "";
+  document.getElementById("recipeMemo").value = "";
+
+  await loadRecipes();
+}
+
+    async function loadRecipes() {
+  const { data, error } = await supabaseClient
+    .from("recipes")
+    .select("*")
+    .order("id", { ascending: false });
+
+  if (error) {
+    document.getElementById("recipeList").innerHTML = "불러오기 실패";
+    return;
+  }
+
+  recipeData = data || [];
+  renderRecipes();
+}
+
+    function renderRecipes() {
+  const wrap = document.getElementById("recipeList");
+
+  if (!recipeData.length) {
+    wrap.innerHTML = "레시피 없음";
+    return;
+  }
+
+  wrap.innerHTML = recipeData.map(item => `
+    <div class="line">
+      <strong>${item.title}</strong>
+      <div class="sub">
+        ${item.category || "기타"}<br><br>
+        ${item.memo || ""}
+      </div>
+    </div>
+  `).join("");
+}
   </script>
 </body>
 </html>
