@@ -2097,9 +2097,10 @@ if (keyword) {
   )}
 </div>
 
-      <div style="display:flex; justify-content:flex-end; margin-top:14px;">
-        <button class="small-btn danger-btn" onclick="deleteRecipe(${item.id})">삭제</button>
-      </div>
+     <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:14px;">
+  <button class="small-btn" onclick="editRecipe(${item.id})">수정</button>
+  <button class="small-btn danger-btn" onclick="deleteRecipe(${item.id})">삭제</button>
+</div>
     </div>
   `).join("");
 }
