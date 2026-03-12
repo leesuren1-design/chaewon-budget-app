@@ -715,16 +715,17 @@
     let currentCardTab = "훈";
     let currentCashTab = "훈";
 
-    let expenseTabData = {
-      let currentRecipeTab = "전체";
-    
-      cardTotal: 0,
-      cashTotal: 0,
-      cardByPerson: { "훈": {}, "쭈": {} },
-      cashByPerson: { "훈": {}, "쭈": {} },
-      cardPersonTotal: { "훈": 0, "쭈": 0 },
-      cashPersonTotal: { "훈": 0, "쭈": 0 }
-    };
+    let recipeData = [];
+let currentRecipeTab = "전체";
+
+let expenseTabData = {
+  cardTotal: 0,
+  cashTotal: 0,
+  cardByPerson: { "훈": {}, "쭈": {} },
+  cashByPerson: { "훈": {}, "쭈": {} },
+  cardPersonTotal: { "훈": 0, "쭈": 0 },
+  cashPersonTotal: { "훈": 0, "쭈": 0 }
+};
 
     function getTodayString() {
       return new Date().toISOString().split("T")[0];
