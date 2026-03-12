@@ -1374,11 +1374,11 @@ document.getElementById("fixedColor").value = item.color || "#ffe6ee";
           inner += `<div class="sub">`;
           Object.entries(cardMap).forEach(([k, v]) => {
          const color = item.color || "#222";
-inner += `<div style="color:${color}">${k} ₩${v.toLocaleString()}</div>`;
+inner += `<div>${k} ₩${v.toLocaleString()}</div>`;
           });
           Object.entries(cashMap).forEach(([k, v]) => {
          const color = item.color || "#222";
-inner += `<div style="color:${color}">${k} ₩${v.toLocaleString()}</div>`;
+inner += `<div>${k} ₩${v.toLocaleString()}</div>`;
           });
           inner += `</div>`;
         }
