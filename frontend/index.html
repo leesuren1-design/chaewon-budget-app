@@ -2239,14 +2239,15 @@ async function loadSettlementSummary() {
 loadSettings().then(async () => {
   await loadExpenses();
   await loadIncome();
+  await loadFixedExpenses();
   await loadCalendar();
   await loadSettlementSummary();
   await loadMonthlySettlement();
   await loadRecipes();
 });
 
-loadFixedExpenses();
 
+    
 async function saveRecipe() {
   const title = document.getElementById("recipeTitle").value.trim();
   const memo = document.getElementById("recipeMemo").value.trim();
