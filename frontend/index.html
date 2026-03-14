@@ -521,7 +521,35 @@
 }
 
 
+.small-btn {
+  min-width: 52px;
+  min-height: 36px;
+  padding: 8px 10px;
+  font-size: 12px;
+  touch-action: manipulation;
+}
 
+.inline-actions,
+.fixed-item-actions {
+  position: relative;
+  z-index: 5;
+}
+
+.inline-actions button,
+.fixed-item-actions button {
+  position: relative;
+  z-index: 6;
+  pointer-events: auto;
+}
+
+@media (max-width: 900px) {
+  .small-btn {
+    min-width: 58px;
+    min-height: 40px;
+    padding: 9px 12px;
+    font-size: 13px;
+  }
+}
 
     
   </style>
@@ -1501,8 +1529,10 @@ groups[key].list.push(`
       ${item.is_active ? "" : "<br>사용안함"}
     </div>
     <div class="fixed-item-actions">
-      <button class="small-btn" onclick="editFixedExpense(${item.id})">수정</button>
-      <button class="small-btn danger-btn" onclick="deleteFixedExpense(${item.id})">삭제</button>
+
+<button type="button" class="small-btn" onclick="editFixedExpense(${item.id})">수정</button>
+<button type="button" class="small-btn danger-btn" onclick="deleteFixedExpense(${item.id})">삭제</button>
+     
     </div>
   </div>
 `);
