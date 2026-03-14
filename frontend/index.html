@@ -441,6 +441,42 @@
   border-top: 1px dashed #e1cbd4;
   font-weight: 800;
 }
+
+.fixed-item-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+}
+
+.fixed-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #ecdde4;
+}
+
+.fixed-item-title {
+  font-weight: 800;
+  color: #4f4448;
+  margin-bottom: 6px;
+}
+
+.fixed-item-meta {
+  font-size: 14px;
+  color: #7d6c73;
+  line-height: 1.5;
+}
+
+.fixed-item-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .fixed-item-grid {
+    grid-template-columns: 1fr;
+  }
+}
     
   </style>
 </head>
@@ -1408,23 +1444,23 @@ async function loadFixedExpenses() {
     const amt = Number(item.amount || 0);
     groups[key].total += amt;
 
-    groups[key].list.push(`
-      <div class="line">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <strong>${item.name}</strong>
-          <div class="inline-actions">
-            <button class="small-btn" onclick="editFixedExpense(${item.id})">수정</button>
-            <button class="small-btn danger-btn" onclick="deleteFixedExpense(${item.id})">삭제</button>
-          </div>
-        </div>
-        <div class="sub">
-          ${item.day}일 / ₩${amt.toLocaleString()} / ${item.payment_method || "-"}
-          ${item.payment_method === "카드" ? " / " + (item.card_name || "기타카드") : ""}
-          ${item.memo ? " / " + item.memo : ""}
-          ${item.is_active ? "" : "<br>사용안함"}
-        </div>
-      </div>
-    `);
+
+groups[key].list.push(`
+  <div class="fixed-item">
+    <div class="fixed-item-title">${item.name}</div>
+    <div class="fixed-item-meta">
+      ${item.day}일 / ₩${amt.toLocaleString()} / ${item.payment_method || "-"}
+      ${item.payment_method === "카드" ? " / " + (item.card_name || "기타카드") : ""}
+      ${item.memo ? " / " + item.memo : ""}
+      ${item.is_active ? "" : "<br>사용안함"}
+    </div>
+    <div class="fixed-item-actions">
+      <button class="small-btn" onclick="editFixedExpense(${item.id})">수정</button>
+      <button class="small-btn danger-btn" onclick="deleteFixedExpense(${item.id})">삭제</button>
+    </div>
+  </div>
+`);
+    
   });
 
   function makeGroupBox(title, key, colorClass) {
@@ -1432,7 +1468,12 @@ async function loadFixedExpenses() {
     return `
       <div class="list-mini-card ${colorClass}">
         <h4>${title}</h4>
-        ${group.list.length ? group.list.join("") : `<div class="sub">내용 없음</div>`}
+
+${group.list.length
+  ? `<div class="fixed-item-grid">${group.list.join("")}</div>`
+  : `<div class="sub">내용 없음</div>`
+}
+        
         <div class="group-total">
           총 합계: ₩${group.total.toLocaleString()}
         </div>
