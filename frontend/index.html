@@ -378,6 +378,36 @@
         font-size: 10px;
       }
     }
+
+.list-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.list-mini-card {
+  border: 1px solid #f1e3e8;
+  border-radius: 14px;
+  padding: 14px;
+  background: linear-gradient(180deg, #fffdfd 0%, #fff8fa 100%);
+}
+
+.list-mini-card h4 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  color: #6b5560;
+}
+
+.fold-hidden {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .list-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+    
   </style>
 </head>
 <body>
@@ -597,15 +627,26 @@
     </div>
 
     <div class="record-list-grid">
-      <div class="card">
-        <h3>고정지출 목록</h3>
-        <div id="fixedList">불러오는 중...</div>
-      </div>
+      
+    <div class="card">
+  <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+    <h3 style="margin-bottom:0;">고정지출 목록</h3>
+    <button class="small-btn" onclick="toggleSection('fixedListWrap', this)">접기</button>
+  </div>
+  <div id="fixedListWrap" style="margin-top:12px;">
+    <div id="fixedList">불러오는 중...</div>
+  </div>
+</div>
 
-      <div class="card">
-        <h3>저장된 지출 내역</h3>
-        <div id="expenseList">불러오는 중...</div>
-      </div>
+    <div class="card">
+  <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+    <h3 style="margin-bottom:0;">저장된 지출 내역</h3>
+    <button class="small-btn" onclick="toggleSection('expenseListWrap', this)">접기</button>
+  </div>
+  <div id="expenseListWrap" style="margin-top:12px;">
+    <div id="expenseList">불러오는 중...</div>
+  </div>
+</div>
 
       <div class="card full-width">
         <h3>저장된 수입 내역</h3>
@@ -1297,97 +1338,80 @@ document.getElementById("personSummary").innerHTML = `
       }
     }
 
-    async function loadFixedExpenses() {
-      const { data, error } = await supabaseClient
-        .from("fixed_expenses")
-        .select("*")
-        .order("day", { ascending: true })
-        .order("id", { ascending: true });
-console.log("fixed_expenses:", data, error);
-      if (error) {
-        document.getElementById("fixedList").innerHTML = "고정지출 불러오기 실패";
-        return;
-      }
 
-      fixedExpenseCache = {};
-      if (!data || data.length === 0) {
-        document.getElementById("fixedList").innerHTML = "등록된 고정지출이 없습니다.";
-        return;
-      }
+async function loadFixedExpenses() {
+  const { data, error } = await supabaseClient
+    .from("fixed_expenses")
+    .select("*")
+    .order("day", { ascending: true })
+    .order("id", { ascending: true });
 
-      let html = "";
-
-      data.forEach((item) => {
-        fixedExpenseCache[item.id] = item;
-
-        html += `
-          <div class="line">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-              <strong>매달 ${item.day}일 / ${item.name}</strong>
-              <div class="inline-actions">
-                <button class="small-btn" onclick="editFixedExpense(${item.id})">수정</button>
-                <button class="small-btn danger-btn" onclick="deleteFixedExpense(${item.id})">삭제</button>
-              </div>
-            </div>
-            <div class="sub">
-              사용: ${item.person || "-"} / 결제: ${item.payer_type || "-"} / ${item.payment_method || "-"}${item.payment_method === "카드" ? " / " + (item.card_name || "기타카드") : ""} / ₩${Number(item.amount || 0).toLocaleString()} / ${item.memo || ""}
-              ${item.is_active ? "" : "<br>사용안함"}
-            </div>
-          </div>
-        `;
-      });
-
-      document.getElementById("fixedList").innerHTML = html;
-    }
-
-   function editFixedExpense(id) {
-  const item = fixedExpenseCache[id];
-  if (!item) return;
-
-  document.getElementById("fixedId").value = item.id;
-  document.getElementById("fixedName").value = item.name || "";
-  document.getElementById("fixedAmount").value = item.amount || "";
-  document.getElementById("fixedDay").value = item.day || "";
-  document.getElementById("fixedPayment").value = item.payment_method || "카드";
-  document.getElementById("fixedCardName").value = item.card_name || "";
-  document.getElementById("fixedPerson").value = item.person || "훈";
-  document.getElementById("fixedPayerType").value = item.payer_type || "훈카드";
-  document.getElementById("fixedMemo").value = item.memo || "";
-  document.getElementById("fixedActive").checked = !!item.is_active;
-  document.getElementById("fixedSaveBtn").innerText = "고정지출 수정";
-
-  const formCard = document.getElementById("fixedExpenseFormCard");
-  if (formCard) {
-    formCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (error) {
+    document.getElementById("fixedList").innerHTML = "고정지출 불러오기 실패";
+    return;
   }
 
-  setTimeout(() => {
-    document.getElementById("fixedName").focus();
-  }, 300);
-}
-   function resetFixedForm() {
-  document.getElementById("fixedId").value = "";
-  document.getElementById("fixedName").value = "";
-  document.getElementById("fixedAmount").value = "";
-  document.getElementById("fixedDay").value = "";
-  document.getElementById("fixedPayment").value = "카드";
-  document.getElementById("fixedCardName").value = "";
-  document.getElementById("fixedPerson").value = "훈";
-  document.getElementById("fixedPayerType").value = "훈카드";
-  document.getElementById("fixedMemo").value = "";
-  document.getElementById("fixedActive").checked = true;
-  document.getElementById("fixedSaveBtn").innerText = "고정지출 저장";
+  fixedExpenseCache = {};
+
+  if (!data || data.length === 0) {
+    document.getElementById("fixedList").innerHTML = "등록된 고정지출이 없습니다.";
+    return;
+  }
+
+  const groups = {
+    "훈현금": [],
+    "쭈현금": [],
+    "훈카드": [],
+    "쭈카드": []
+  };
+
+  data.forEach((item) => {
+    fixedExpenseCache[item.id] = item;
+
+    const key = item.payer_type || "";
+    if (!groups[key]) return;
+
+    groups[key].push(`
+      <div class="line">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+          <strong>${item.name}</strong>
+          <div class="inline-actions">
+            <button class="small-btn" onclick="editFixedExpense(${item.id})">수정</button>
+            <button class="small-btn danger-btn" onclick="deleteFixedExpense(${item.id})">삭제</button>
+          </div>
+        </div>
+        <div class="sub">
+          ${item.day}일 / ₩${Number(item.amount || 0).toLocaleString()} / ${item.payment_method || "-"}
+          ${item.payment_method === "카드" ? " / " + (item.card_name || "기타카드") : ""}
+          ${item.memo ? " / " + item.memo : ""}
+          ${item.is_active ? "" : "<br>사용안함"}
+        </div>
+      </div>
+    `);
+  });
+
+  function makeGroupBox(title, list) {
+    const total = list.length;
+    return `
+      <div class="list-mini-card">
+        <h4>${title}</h4>
+        ${total ? list.join("") : `<div class="sub">내용 없음</div>`}
+        <div class="mini-total">합계 항목 수: ${total}건</div>
+      </div>
+    `;
+  }
+
+  document.getElementById("fixedList").innerHTML = `
+    <div class="list-grid-2">
+      ${makeGroupBox("훈 현금", groups["훈현금"])}
+      ${makeGroupBox("쭈 현금", groups["쭈현금"])}
+      ${makeGroupBox("훈 카드", groups["훈카드"])}
+      ${makeGroupBox("쭈 카드", groups["쭈카드"])}
+    </div>
+  `;
 }
 
-    function getDateStringFromMonthAndDay(year, month, day) {
-      const lastDay = new Date(year, month, 0).getDate();
-      const safeDay = Math.min(Number(day), lastDay);
-      const y = String(year);
-      const m = String(month).padStart(2, "0");
-      const d = String(safeDay).padStart(2, "0");
-      return `${y}-${m}-${d}`;
-    }
-
+    
     async function syncFixedExpenseToSelectedMonth(fixedExpenseId) {
   const { year, month, startString, endString } = getSelectedMonthRange();
 
@@ -2208,6 +2232,14 @@ function editRecipe(id) {
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
+function toggleSection(sectionId, btn) {
+  const el = document.getElementById(sectionId);
+  if (!el) return;
+
+  el.classList.toggle("fold-hidden");
+  btn.innerText = el.classList.contains("fold-hidden") ? "펼치기" : "접기";
+}
+    
   </script>
 </body>
 </html>
