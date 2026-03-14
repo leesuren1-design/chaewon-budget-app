@@ -1393,10 +1393,10 @@ async function loadFixedExpenses() {
   }
 
   const groups = {
-    "훈현금": [],
-    "쭈현금": [],
-    "훈카드": [],
-    "쭈카드": []
+    "훈현금": { list: [], total: 0 },
+    "쭈현금": { list: [], total: 0 },
+    "훈카드": { list: [], total: 0 },
+    "쭈카드": { list: [], total: 0 }
   };
 
   data.forEach((item) => {
@@ -1405,9 +1405,12 @@ async function loadFixedExpenses() {
     const key = item.payer_type || "";
     if (!groups[key]) return;
 
-    groups[key].push(`
+    const amt = Number(item.amount || 0);
+    groups[key].total += amt;
+
+    groups[key].list.push(`
       <div class="line">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
           <strong>${item.name}</strong>
           <div class="inline-actions">
             <button class="small-btn" onclick="editFixedExpense(${item.id})">수정</button>
@@ -1415,7 +1418,7 @@ async function loadFixedExpenses() {
           </div>
         </div>
         <div class="sub">
-          ${item.day}일 / ₩${Number(item.amount || 0).toLocaleString()} / ${item.payment_method || "-"}
+          ${item.day}일 / ₩${amt.toLocaleString()} / ${item.payment_method || "-"}
           ${item.payment_method === "카드" ? " / " + (item.card_name || "기타카드") : ""}
           ${item.memo ? " / " + item.memo : ""}
           ${item.is_active ? "" : "<br>사용안함"}
@@ -1424,23 +1427,25 @@ async function loadFixedExpenses() {
     `);
   });
 
-  function makeGroupBox(title, list) {
-    const total = list.length;
+  function makeGroupBox(title, key, colorClass) {
+    const group = groups[key];
     return `
-      <div class="list-mini-card">
+      <div class="list-mini-card ${colorClass}">
         <h4>${title}</h4>
-        ${total ? list.join("") : `<div class="sub">내용 없음</div>`}
-        <div class="mini-total">합계 항목 수: ${total}건</div>
+        ${group.list.length ? group.list.join("") : `<div class="sub">내용 없음</div>`}
+        <div class="group-total">
+          총 합계: ₩${group.total.toLocaleString()}
+        </div>
       </div>
     `;
   }
 
   document.getElementById("fixedList").innerHTML = `
     <div class="list-grid-2">
-      ${makeGroupBox("훈 현금", groups["훈현금"])}
-      ${makeGroupBox("쭈 현금", groups["쭈현금"])}
-      ${makeGroupBox("훈 카드", groups["훈카드"])}
-      ${makeGroupBox("쭈 카드", groups["쭈카드"])}
+      ${makeGroupBox("훈 현금", "훈현금", "group-hun")}
+      ${makeGroupBox("쭈 현금", "쭈현금", "group-jju")}
+      ${makeGroupBox("훈 카드", "훈카드", "group-hun")}
+      ${makeGroupBox("쭈 카드", "쭈카드", "group-jju")}
     </div>
   `;
 }
