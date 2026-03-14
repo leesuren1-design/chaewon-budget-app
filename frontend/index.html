@@ -2452,6 +2452,86 @@ function showCalendarDayDetail(dateString, items) {
     `\n\n일 합계: ₩${total.toLocaleString()}`
   );
 }
+
+function editFixedExpense(id) {
+  const item = fixedExpenseCache[id];
+  if (!item) {
+    alert("수정할 고정지출 정보를 찾지 못했어요.");
+    return;
+  }
+
+  const fixedId = document.getElementById("fixedId");
+  const fixedName = document.getElementById("fixedName");
+  const fixedAmount = document.getElementById("fixedAmount");
+  const fixedDay = document.getElementById("fixedDay");
+  const fixedPayment = document.getElementById("fixedPayment");
+  const fixedCardName = document.getElementById("fixedCardName");
+  const fixedPerson = document.getElementById("fixedPerson");
+  const fixedPayerType = document.getElementById("fixedPayerType");
+  const fixedMemo = document.getElementById("fixedMemo");
+  const fixedActive = document.getElementById("fixedActive");
+  const fixedSaveBtn = document.getElementById("fixedSaveBtn");
+  const formCard = document.getElementById("fixedExpenseFormCard");
+
+  if (fixedId) fixedId.value = item.id ?? "";
+  if (fixedName) fixedName.value = item.name || "";
+  if (fixedAmount) fixedAmount.value = item.amount || "";
+  if (fixedDay) fixedDay.value = item.day || "";
+  if (fixedPayment) fixedPayment.value = item.payment_method || "카드";
+  if (fixedCardName) fixedCardName.value = item.card_name || "";
+  if (fixedPerson) fixedPerson.value = item.person || "훈";
+  if (fixedPayerType) fixedPayerType.value = item.payer_type || "훈카드";
+  if (fixedMemo) fixedMemo.value = item.memo || "";
+  if (fixedActive) fixedActive.checked = !!item.is_active;
+  if (fixedSaveBtn) fixedSaveBtn.innerText = "고정지출 수정";
+
+  if (formCard) {
+    const y = formCard.getBoundingClientRect().top + window.pageYOffset - 20;
+    window.scrollTo({
+      top: y,
+      behavior: "smooth"
+    });
+  }
+
+  setTimeout(() => {
+    if (fixedName) fixedName.focus({ preventScroll: true });
+  }, 350);
+}
+
+function resetFixedForm() {
+  const fixedId = document.getElementById("fixedId");
+  const fixedName = document.getElementById("fixedName");
+  const fixedAmount = document.getElementById("fixedAmount");
+  const fixedDay = document.getElementById("fixedDay");
+  const fixedPayment = document.getElementById("fixedPayment");
+  const fixedCardName = document.getElementById("fixedCardName");
+  const fixedPerson = document.getElementById("fixedPerson");
+  const fixedPayerType = document.getElementById("fixedPayerType");
+  const fixedMemo = document.getElementById("fixedMemo");
+  const fixedActive = document.getElementById("fixedActive");
+  const fixedSaveBtn = document.getElementById("fixedSaveBtn");
+
+  if (fixedId) fixedId.value = "";
+  if (fixedName) fixedName.value = "";
+  if (fixedAmount) fixedAmount.value = "";
+  if (fixedDay) fixedDay.value = "";
+  if (fixedPayment) fixedPayment.value = "카드";
+  if (fixedCardName) fixedCardName.value = "";
+  if (fixedPerson) fixedPerson.value = "훈";
+  if (fixedPayerType) fixedPayerType.value = "훈카드";
+  if (fixedMemo) fixedMemo.value = "";
+  if (fixedActive) fixedActive.checked = true;
+  if (fixedSaveBtn) fixedSaveBtn.innerText = "고정지출 저장";
+}
+
+function getDateStringFromMonthAndDay(year, month, day) {
+  const lastDay = new Date(year, month, 0).getDate();
+  const safeDay = Math.min(Number(day), lastDay);
+  const y = String(year);
+  const m = String(month).padStart(2, "0");
+  const d = String(safeDay).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
     
   </script>
 </body>
