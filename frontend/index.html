@@ -1045,16 +1045,21 @@ function setMode(mode) {
       if ((item.payment_method || "") !== "카드") return "";
       return item.card_name || "기타카드";
     }
+
 function renderExpenseTabs() {
   const cardMap = expenseTabData.cardByPerson[currentCardTab] || {};
   const cashMap = expenseTabData.cashByPerson[currentCashTab] || {};
 
   const cardHtml = Object.keys(cardMap).length
-    ? Object.entries(cardMap).map(([k, v]) => `${k} ₩${v.toLocaleString()}`).join("<br>")
+    ? Object.entries(cardMap)
+        .map(([k, v]) => `${k} ₩${v.toLocaleString()}`)
+        .join("<br>")
     : `${currentCardTab} 카드 내역 없음`;
 
   const cashHtml = Object.keys(cashMap).length
-    ? Object.entries(cashMap).map(([k, v]) => `${k} ₩${v.toLocaleString()}`).join("<br>")
+    ? Object.entries(cashMap)
+        .map(([k, v]) => `${k} ₩${v.toLocaleString()}`)
+        .join("<br>")
     : `${currentCashTab} 현금/이체 내역 없음`;
 
   document.getElementById("cardBreakdown").innerHTML = cardHtml;
@@ -1063,16 +1068,27 @@ function renderExpenseTabs() {
   const currentCardAmount = expenseTabData.cardPersonTotal[currentCardTab] || 0;
   const currentCashAmount = expenseTabData.cashPersonTotal[currentCashTab] || 0;
 
+  const currentCardFixed = expenseTabData.cardFixedTotal?.[currentCardTab] || 0;
+  const currentCardNormal = expenseTabData.cardNormalTotal?.[currentCardTab] || 0;
+  const currentCashFixed = expenseTabData.cashFixedTotal?.[currentCashTab] || 0;
+  const currentCashNormal = expenseTabData.cashNormalTotal?.[currentCashTab] || 0;
+
   document.getElementById("cardExpense").innerText = formatMoney(currentCardAmount);
   document.getElementById("cashExpense").innerText = formatMoney(currentCashAmount);
 
-  document.getElementById("cardPersonTotal").innerText =
-    `${currentCardTab} 카드 합계: ${formatMoney(currentCardAmount)}`;
-  document.getElementById("cashPersonTotal").innerText =
-    `${currentCashTab} 현금/이체 합계: ${formatMoney(currentCashAmount)}`;
+  document.getElementById("cardPersonTotal").innerHTML = `
+    ${currentCardTab} 카드 합계: ${formatMoney(currentCardAmount)}<br>
+    <span class="muted">고정 ${formatMoney(currentCardFixed)} / 일반 ${formatMoney(currentCardNormal)}</span>
+  `;
+
+  document.getElementById("cashPersonTotal").innerHTML = `
+    ${currentCashTab} 현금/이체 합계: ${formatMoney(currentCashAmount)}<br>
+    <span class="muted">고정 ${formatMoney(currentCashFixed)} / 일반 ${formatMoney(currentCashNormal)}</span>
+  `;
 
   document.getElementById("cardTotalBottom").innerText =
     `전체 카드 총합: ${formatMoney(expenseTabData.cardTotal || 0)}`;
+
   document.getElementById("cashTotalBottom").innerText =
     `전체 현금/이체 총합: ${formatMoney(expenseTabData.cashTotal || 0)}`;
 
@@ -1082,6 +1098,9 @@ function renderExpenseTabs() {
   document.getElementById("cashTabJju").classList.toggle("active", currentCashTab === "쭈");
 }
 
+
+
+    
 function setExpenseTab(type, person) {
   if (type === "card") {
     currentCardTab = person;
@@ -1130,6 +1149,7 @@ function setExpenseTab(type, person) {
       }
     }
 
+
 async function loadExpenses() {
   const { startString, endString } = getSelectedMonthRange();
 
@@ -1156,7 +1176,8 @@ async function loadExpenses() {
     document.getElementById("personSummary").innerHTML = "저장된 내역이 없습니다.";
     document.getElementById("expenseBreakdown").innerText = "훈카드 ₩0 / 훈현금 ₩0 / 쭈카드 ₩0 / 쭈현금 ₩0";
     document.getElementById("fixedExpenseTotalCard").innerText = "₩ 0";
-    document.getElementById("fixedExpenseBreakdown").innerText = "카드 ₩0 / 현금·이체 ₩0";
+    document.getElementById("fixedExpenseBreakdown").innerHTML =
+      `고정 카드 ₩0 / 고정 현금·이체 ₩0<br>일반 카드 ₩0 / 일반 현금·이체 ₩0`;
 
     expenseTabData = {
       cardTotal: 0,
@@ -1164,32 +1185,46 @@ async function loadExpenses() {
       cardByPerson: { "훈": {}, "쭈": {} },
       cashByPerson: { "훈": {}, "쭈": {} },
       cardPersonTotal: { "훈": 0, "쭈": 0 },
-      cashPersonTotal: { "훈": 0, "쭈": 0 }
+      cashPersonTotal: { "훈": 0, "쭈": 0 },
+      cardFixedTotal: { "훈": 0, "쭈": 0 },
+      cardNormalTotal: { "훈": 0, "쭈": 0 },
+      cashFixedTotal: { "훈": 0, "쭈": 0 },
+      cashNormalTotal: { "훈": 0, "쭈": 0 }
     };
+
     renderExpenseTabs();
     updateRemaining();
     return;
   }
 
- let total = 0;
-let cardTotal = 0;
-let cashTotal = 0;
+  let total = 0;
+  let cardTotal = 0;
+  let cashTotal = 0;
 
-let fixedExpenseTotal = 0;
-let fixedCardExpenseTotal = 0;
-let fixedCashExpenseTotal = 0;
+  let fixedExpenseTotal = 0;
+  let fixedCardExpenseTotal = 0;
+  let fixedCashExpenseTotal = 0;
 
-let normalExpenseTotal = 0;
-let normalCardExpenseTotal = 0;
-let normalCashExpenseTotal = 0;
+  let normalExpenseTotal = 0;
+  let normalCardExpenseTotal = 0;
+  let normalCashExpenseTotal = 0;
 
-  const personTotals = { "훈": 0, "쭈": 0, "채원": 0, "나은": 0, "기타": 0 };
-  const payerBreakdown = { "훈카드": 0, "훈현금": 0, "쭈카드": 0, "쭈현금": 0 };
+  const payerBreakdown = {
+    "훈카드": 0,
+    "훈현금": 0,
+    "쭈카드": 0,
+    "쭈현금": 0
+  };
 
   const cardByPerson = { "훈": {}, "쭈": {} };
   const cashByPerson = { "훈": {}, "쭈": {} };
   const cardPersonTotal = { "훈": 0, "쭈": 0 };
   const cashPersonTotal = { "훈": 0, "쭈": 0 };
+
+  const cardFixedTotal = { "훈": 0, "쭈": 0 };
+  const cardNormalTotal = { "훈": 0, "쭈": 0 };
+  const cashFixedTotal = { "훈": 0, "쭈": 0 };
+  const cashNormalTotal = { "훈": 0, "쭈": 0 };
 
   let html = "";
 
@@ -1203,27 +1238,17 @@ let normalCashExpenseTotal = 0;
 
     total += amt;
 
-    if (personTotals[person] !== undefined) {
-      personTotals[person] += amt;
+    if (isFixed) {
+      fixedExpenseTotal += amt;
+
+      if (payment === "카드") fixedCardExpenseTotal += amt;
+      else fixedCashExpenseTotal += amt;
+    } else {
+      normalExpenseTotal += amt;
+
+      if (payment === "카드") normalCardExpenseTotal += amt;
+      else normalCashExpenseTotal += amt;
     }
-
-if (isFixed) {
-  fixedExpenseTotal += amt;
-
-  if (payment === "카드") {
-    fixedCardExpenseTotal += amt;
-  } else {
-    fixedCashExpenseTotal += amt;
-  }
-} else {
-  normalExpenseTotal += amt;
-
-  if (payment === "카드") {
-    normalCardExpenseTotal += amt;
-  } else {
-    normalCashExpenseTotal += amt;
-  }
-}
 
     if (payment === "카드") {
       cardTotal += amt;
@@ -1233,12 +1258,18 @@ if (isFixed) {
         payerBreakdown["훈카드"] += amt;
         cardByPerson["훈"][key] = (cardByPerson["훈"][key] || 0) + amt;
         cardPersonTotal["훈"] += amt;
+
+        if (isFixed) cardFixedTotal["훈"] += amt;
+        else cardNormalTotal["훈"] += amt;
       }
 
       if (payerType === "쭈카드") {
         payerBreakdown["쭈카드"] += amt;
         cardByPerson["쭈"][key] = (cardByPerson["쭈"][key] || 0) + amt;
         cardPersonTotal["쭈"] += amt;
+
+        if (isFixed) cardFixedTotal["쭈"] += amt;
+        else cardNormalTotal["쭈"] += amt;
       }
     } else {
       cashTotal += amt;
@@ -1248,12 +1279,18 @@ if (isFixed) {
         payerBreakdown["훈현금"] += amt;
         cashByPerson["훈"][key] = (cashByPerson["훈"][key] || 0) + amt;
         cashPersonTotal["훈"] += amt;
+
+        if (isFixed) cashFixedTotal["훈"] += amt;
+        else cashNormalTotal["훈"] += amt;
       }
 
       if (payerType === "쭈현금") {
         payerBreakdown["쭈현금"] += amt;
         cashByPerson["쭈"][key] = (cashByPerson["쭈"][key] || 0) + amt;
         cashPersonTotal["쭈"] += amt;
+
+        if (isFixed) cashFixedTotal["쭈"] += amt;
+        else cashNormalTotal["쭈"] += amt;
       }
     }
 
@@ -1267,7 +1304,7 @@ if (isFixed) {
           ${item.date || "-"} / ${payment}${payment === "카드" ? " / " + (cardName || "기타카드") : ""}
           / 사용: ${person}
           / 결제: ${payerType || "-"}
-          / ${item.memo || ""}
+          / ${isFixed ? "[고정]" : "[일반]"} ${item.memo || ""}
         </div>
       </div>
     `;
@@ -1279,7 +1316,11 @@ if (isFixed) {
     cardByPerson,
     cashByPerson,
     cardPersonTotal,
-    cashPersonTotal
+    cashPersonTotal,
+    cardFixedTotal,
+    cardNormalTotal,
+    cashFixedTotal,
+    cashNormalTotal
   };
 
   const settlementRange = getNextCardEstimateRange();
@@ -1300,8 +1341,7 @@ if (isFixed) {
 
   document.getElementById("expenseList").innerHTML = html;
   document.getElementById("totalExpense").innerText = "₩ " + total.toLocaleString();
-  document.getElementById("cardExpense").innerText = "₩ " + cardTotal.toLocaleString();
-  document.getElementById("cashExpense").innerText = "₩ " + cashTotal.toLocaleString();
+
   document.getElementById("nextCardExpense").innerText = "₩ " + nextCardTotal.toLocaleString();
   document.getElementById("nextCardExpenseRange").innerText =
     `${settlementRange.startString} ~ ${settlementRange.endString} 카드 사용분`;
@@ -1310,22 +1350,24 @@ if (isFixed) {
     `훈카드 ₩${payerBreakdown["훈카드"].toLocaleString()} / 훈현금 ₩${payerBreakdown["훈현금"].toLocaleString()}<br>` +
     `쭈카드 ₩${payerBreakdown["쭈카드"].toLocaleString()} / 쭈현금 ₩${payerBreakdown["쭈현금"].toLocaleString()}`;
 
-document.getElementById("fixedExpenseTotalCard").innerText = "₩ " + fixedExpenseTotal.toLocaleString();
-document.getElementById("fixedExpenseBreakdown").innerHTML =
-  `고정 카드 ₩${fixedCardExpenseTotal.toLocaleString()} / 고정 현금·이체 ₩${fixedCashExpenseTotal.toLocaleString()}<br>
-   일반 카드 ₩${normalCardExpenseTotal.toLocaleString()} / 일반 현금·이체 ₩${normalCashExpenseTotal.toLocaleString()}`;
+  document.getElementById("fixedExpenseTotalCard").innerText = "₩ " + fixedExpenseTotal.toLocaleString();
+  document.getElementById("fixedExpenseBreakdown").innerHTML =
+    `고정 카드 ₩${fixedCardExpenseTotal.toLocaleString()} / 고정 현금·이체 ₩${fixedCashExpenseTotal.toLocaleString()}<br>` +
+    `일반 카드 ₩${normalCardExpenseTotal.toLocaleString()} / 일반 현금·이체 ₩${normalCashExpenseTotal.toLocaleString()}`;
 
-document.getElementById("personSummary").innerHTML = `
-  <div class="line">훈 카드결제: ₩ ${payerBreakdown["훈카드"].toLocaleString()}</div>
-  <div class="line">훈 현금/이체: ₩ ${payerBreakdown["훈현금"].toLocaleString()}</div>
-  <div class="line">쭈 카드결제: ₩ ${payerBreakdown["쭈카드"].toLocaleString()}</div>
-  <div class="line">쭈 현금/이체: ₩ ${payerBreakdown["쭈현금"].toLocaleString()}</div>
-  <div style="padding-top:10px;">총 지출: ₩ ${total.toLocaleString()}</div>
-`;
+  document.getElementById("personSummary").innerHTML = `
+    <div class="line">훈 카드결제: ₩ ${payerBreakdown["훈카드"].toLocaleString()}</div>
+    <div class="line">훈 현금/이체: ₩ ${payerBreakdown["훈현금"].toLocaleString()}</div>
+    <div class="line">쭈 카드결제: ₩ ${payerBreakdown["쭈카드"].toLocaleString()}</div>
+    <div class="line">쭈 현금/이체: ₩ ${payerBreakdown["쭈현금"].toLocaleString()}</div>
+    <div style="padding-top:10px;">총 지출: ₩ ${total.toLocaleString()}</div>
+  `;
 
   renderExpenseTabs();
   updateRemaining();
 }
+
+
     
    async function saveExpense() {
   const dateValue = document.getElementById("expenseDate").value || getTodayString();
