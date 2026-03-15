@@ -1171,12 +1171,17 @@ async function loadExpenses() {
     return;
   }
 
-  let total = 0;
-  let cardTotal = 0;
-  let cashTotal = 0;
-  let fixedExpenseTotal = 0;
-  let fixedCardExpenseTotal = 0;
-  let fixedCashExpenseTotal = 0;
+ let total = 0;
+let cardTotal = 0;
+let cashTotal = 0;
+
+let fixedExpenseTotal = 0;
+let fixedCardExpenseTotal = 0;
+let fixedCashExpenseTotal = 0;
+
+let normalExpenseTotal = 0;
+let normalCardExpenseTotal = 0;
+let normalCashExpenseTotal = 0;
 
   const personTotals = { "훈": 0, "쭈": 0, "채원": 0, "나은": 0, "기타": 0 };
   const payerBreakdown = { "훈카드": 0, "훈현금": 0, "쭈카드": 0, "쭈현금": 0 };
@@ -1202,11 +1207,23 @@ async function loadExpenses() {
       personTotals[person] += amt;
     }
 
-    if (isFixed) {
-      fixedExpenseTotal += amt;
-      if (payment === "카드") fixedCardExpenseTotal += amt;
-      else fixedCashExpenseTotal += amt;
-    }
+if (isFixed) {
+  fixedExpenseTotal += amt;
+
+  if (payment === "카드") {
+    fixedCardExpenseTotal += amt;
+  } else {
+    fixedCashExpenseTotal += amt;
+  }
+} else {
+  normalExpenseTotal += amt;
+
+  if (payment === "카드") {
+    normalCardExpenseTotal += amt;
+  } else {
+    normalCashExpenseTotal += amt;
+  }
+}
 
     if (payment === "카드") {
       cardTotal += amt;
@@ -1293,9 +1310,10 @@ async function loadExpenses() {
     `훈카드 ₩${payerBreakdown["훈카드"].toLocaleString()} / 훈현금 ₩${payerBreakdown["훈현금"].toLocaleString()}<br>` +
     `쭈카드 ₩${payerBreakdown["쭈카드"].toLocaleString()} / 쭈현금 ₩${payerBreakdown["쭈현금"].toLocaleString()}`;
 
-  document.getElementById("fixedExpenseTotalCard").innerText = "₩ " + fixedExpenseTotal.toLocaleString();
-  document.getElementById("fixedExpenseBreakdown").innerText =
-    `카드 ₩${fixedCardExpenseTotal.toLocaleString()} / 현금·이체 ₩${fixedCashExpenseTotal.toLocaleString()}`;
+document.getElementById("fixedExpenseTotalCard").innerText = "₩ " + fixedExpenseTotal.toLocaleString();
+document.getElementById("fixedExpenseBreakdown").innerHTML =
+  `고정 카드 ₩${fixedCardExpenseTotal.toLocaleString()} / 고정 현금·이체 ₩${fixedCashExpenseTotal.toLocaleString()}<br>
+   일반 카드 ₩${normalCardExpenseTotal.toLocaleString()} / 일반 현금·이체 ₩${normalCashExpenseTotal.toLocaleString()}`;
 
 document.getElementById("personSummary").innerHTML = `
   <div class="line">훈 카드결제: ₩ ${payerBreakdown["훈카드"].toLocaleString()}</div>
