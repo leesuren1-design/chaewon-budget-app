@@ -1076,15 +1076,15 @@ function renderExpenseTabs() {
   document.getElementById("cardExpense").innerText = formatMoney(currentCardAmount);
   document.getElementById("cashExpense").innerText = formatMoney(currentCashAmount);
 
-  document.getElementById("cardPersonTotal").innerHTML = `
-    ${currentCardTab} 카드 합계: ${formatMoney(currentCardAmount)}<br>
-    <span class="muted">고정 ${formatMoney(currentCardFixed)} / 일반 ${formatMoney(currentCardNormal)}</span>
-  `;
+document.getElementById("cardPersonTotal").innerHTML = `
+  <b>고정 카드:</b> ${formatMoney(currentCardFixed)}<br>
+  <b>일반 카드:</b> ${formatMoney(currentCardNormal)}
+`;
 
-  document.getElementById("cashPersonTotal").innerHTML = `
-    ${currentCashTab} 현금/이체 합계: ${formatMoney(currentCashAmount)}<br>
-    <span class="muted">고정 ${formatMoney(currentCashFixed)} / 일반 ${formatMoney(currentCashNormal)}</span>
-  `;
+document.getElementById("cashPersonTotal").innerHTML = `
+  <b>고정 현금:</b> ${formatMoney(currentCashFixed)}<br>
+  <b>일반 현금:</b> ${formatMoney(currentCashNormal)}
+`;
 
   document.getElementById("cardTotalBottom").innerText =
     `전체 카드 총합: ${formatMoney(expenseTabData.cardTotal || 0)}`;
@@ -1351,9 +1351,9 @@ async function loadExpenses() {
     `쭈카드 ₩${payerBreakdown["쭈카드"].toLocaleString()} / 쭈현금 ₩${payerBreakdown["쭈현금"].toLocaleString()}`;
 
   document.getElementById("fixedExpenseTotalCard").innerText = "₩ " + fixedExpenseTotal.toLocaleString();
-  document.getElementById("fixedExpenseBreakdown").innerHTML =
-    `고정 카드 ₩${fixedCardExpenseTotal.toLocaleString()} / 고정 현금·이체 ₩${fixedCashExpenseTotal.toLocaleString()}<br>` +
-    `일반 카드 ₩${normalCardExpenseTotal.toLocaleString()} / 일반 현금·이체 ₩${normalCashExpenseTotal.toLocaleString()}`;
+document.getElementById("fixedExpenseBreakdown").innerHTML =
+  `고정 카드 ₩${fixedCardExpenseTotal.toLocaleString()}<br>
+   고정 현금·이체 ₩${fixedCashExpenseTotal.toLocaleString()}`;
 
   document.getElementById("personSummary").innerHTML = `
     <div class="line">훈 카드결제: ₩ ${payerBreakdown["훈카드"].toLocaleString()}</div>
