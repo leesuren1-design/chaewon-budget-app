@@ -797,7 +797,7 @@
         <input id="settlementDayInput" type="number" placeholder="카드 결제 기준일 (예: 25)" />
         <button class="primary-btn" onclick="saveSettlementDay()">저장</button>
       </div>
-      <div class="sub">예: 25일이면 선택한 달 기준 정산기간은 전월 26일 ~ 해당월 25일입니다.</div>
+  <div class="sub">선택한 달 1일 ~ 말일 기준으로 정산합니다.</div>
     </div>
 
     <div class="section-block">
@@ -918,21 +918,14 @@
       };
     }
 
-    function getSettlementRange() {
-      const { year, month, monthValue } = getSelectedMonthRange();
-      const d = Number(currentSettlementDay || 25);
 
-      const startDate = new Date(year, month - 2, d + 1);
-      const endDate = new Date(year, month - 1, d);
-
-      return {
-        monthValue,
-        startDate,
-        endDate,
-        startString: startDate.toISOString().split("T")[0],
-        endString: endDate.toISOString().split("T")[0]
-      };
-    }
+async function saveSettlementDay() {
+  alert("이제 정산은 선택한 달 1일~말일 기준으로 계산돼요.");
+  await loadExpenses();
+  await loadSettlementSummary();
+  await loadMonthlySettlement();
+}
+    
 
     function getNextCardEstimateRange() {
       return getSettlementRange();
@@ -1940,8 +1933,8 @@ async function loadExpenses() {
     async function loadSettlementSummary() {
       const { startString, endString, monthValue } = getSettlementRange();
 
-      document.getElementById("settlementRangeLabel").innerText =
-        `${monthValue} 정산기간: ${startString} ~ ${endString} (기준일 ${currentSettlementDay}일)`;
+   document.getElementById("settlementRangeLabel").innerText =
+  `${monthValue} 정산기간: ${startString} ~ ${endString}`;
 
       const incomeResult = await supabaseClient
         .from("income")
