@@ -918,13 +918,21 @@
       };
     }
 
+function getSettlementRange() {
+  const { year, month, monthValue } = getSelectedMonthRange();
 
-async function saveSettlementDay() {
-  alert("이제 정산은 선택한 달 1일~말일 기준으로 계산돼요.");
-  await loadExpenses();
-  await loadSettlementSummary();
-  await loadMonthlySettlement();
+  const startDate = new Date(year, month - 1, 1);
+  const endDate = new Date(year, month, 0);
+
+  return {
+    monthValue,
+    startDate,
+    endDate,
+    startString: startDate.toISOString().split("T")[0],
+    endString: endDate.toISOString().split("T")[0]
+  };
 }
+
     
 
     function getNextCardEstimateRange() {
