@@ -1071,27 +1071,14 @@ function renderExpenseTabs() {
       document.getElementById("settlementDayInput").value = currentSettlementDay;
     }
 
-    async function saveSettlementDay() {
-      const value = Number(document.getElementById("settlementDayInput").value || 25);
+async function saveSettlementDay() {
+  alert("이제 정산은 선택한 달 1일~말일 기준으로 계산돼요.");
+  await loadExpenses();
+  await loadSettlementSummary();
+  await loadMonthlySettlement();
+}
 
-      if (!value || value < 1 || value > 31) {
-        alert("1~31 사이 숫자를 넣어주세요.");
-        return;
-      }
-
-      const { error } = await supabaseClient
-        .from("app_settings")
-        .upsert([{ id: 1, settlement_day: value }], { onConflict: "id" });
-
-      if (error) {
-        alert("정산 기준일 저장 실패: " + error.message);
-      } else {
-        currentSettlementDay = value;
-        await loadExpenses();
-        await loadSettlementSummary();
-        await loadMonthlySettlement();
-      }
-    }
+      
 
 async function loadExpenses() {
   const { startString, endString } = getSelectedMonthRange();
