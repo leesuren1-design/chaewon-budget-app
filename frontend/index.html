@@ -1,230 +1,261 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>채원나은이네 가계부</title>
-
-<style>
-body{
-font-family: "Apple SD Gothic Neo", sans-serif;
-margin:0;
-background:linear-gradient(180deg,#fffafb,#f8f2ff);
-padding:20px;
-color:#333;
-}
-
-.card{
-background:white;
-border-radius:14px;
-padding:16px;
-margin-bottom:16px;
-box-shadow:0 4px 12px rgba(0,0,0,0.05);
-}
-
-h2,h3{margin:0 0 10px 0}
-
-.flex{display:flex;gap:12px;flex-wrap:wrap}
-.big{font-size:22px;font-weight:700}
-
-.blue{color:#3b82f6}
-.pink{color:#ec4899}
-.red{color:#ef4444}
-
-button{
-border:none;
-background:#ffe4ed;
-padding:6px 10px;
-border-radius:8px;
-cursor:pointer;
-}
-
-input{
-padding:6px;
-border-radius:6px;
-border:1px solid #ddd;
-margin:4px;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>채원나은이네 가계부</title>
+  <style>
+    :root{
+      --bg1:#fffafb; --bg2:#f8f3ff; --card:#ffffffee; --line:#efe4ea; --text:#3c3438; --muted:#8a7b82;
+      --blue-bg:linear-gradient(180deg,#f3f8ff 0%,#ebf4ff 100%); --blue:#4d73d9;
+      --pink-bg:linear-gradient(180deg,#fff4f8 0%,#ffeef5 100%); --pink:#d86493;
+      --purple-bg:linear-gradient(180deg,#f8f2ff 0%,#fff1f7 100%); --purple:#8e67d8;
+      --soft-shadow:0 10px 24px rgba(177,140,154,.10); --radius:20px; --danger:#e25563;
+    }
+    *{box-sizing:border-box} body{margin:0;padding:18px;color:var(--text);font-family:"Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 100%)}
+    h1,h2,h3,h4,p{margin:0} .wrap{max-width:1400px;margin:0 auto}
+    .title{text-align:center;font-size:30px;font-weight:900;letter-spacing:-.4px;color:#5e4b55;margin:4px 0 18px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--soft-shadow);backdrop-filter: blur(6px)}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;padding:12px;margin-bottom:14px}
+    .mode-btn,.btn{border:none;cursor:pointer;border-radius:14px;padding:12px 16px;background:#fff;color:#5d4f56;font-size:14px;font-weight:700;box-shadow:0 4px 12px rgba(191,154,169,.08)}
+    .mode-btn.active{background:linear-gradient(180deg,#ffe3ec 0%,#ffdbe8 100%)} .btn.primary{background:linear-gradient(180deg,#ffeaf2 0%,#ffe3ee 100%)} .btn.ghost{background:#fff}
+    .btn.small,.small-btn{padding:7px 11px;font-size:12px;border:none;border-radius:10px;cursor:pointer;background:#fff7fa;color:#7c5362}
+    .btn.danger,.small-btn.danger{background:#fff0f2;color:#c4566b}
+    .hidden{display:none !important}
+    .top-controls{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;padding:16px;margin-bottom:14px}
+    .field label,.card-subtitle{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
+    input,select,textarea{width:100%;border:1px solid #eadbe1;border-radius:13px;padding:12px;font-size:14px;background:#fffdfd;color:#4e4449}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:#e7bfd0;box-shadow:0 0 0 4px rgba(255,221,233,.45)}
+    .summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:14px}
+    .summary-card{padding:16px;border-radius:20px;border:1px solid var(--line);background:linear-gradient(180deg,#fff 0%,#fffafc 100%);box-shadow:var(--soft-shadow)}
+    .summary-card.blue{background:var(--blue-bg);border-color:#dbe8ff}.summary-card.pink{background:var(--pink-bg);border-color:#f4dbe6}.summary-card.purple{background:var(--purple-bg);border-color:#e6daf9}
+    .summary-card .k{font-size:13px;color:var(--muted);margin-bottom:8px;font-weight:700}.summary-card .v{font-size:30px;font-weight:900;letter-spacing:-.5px}
+    .formula{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.45}
+    .blue-text{color:var(--blue)!important}.pink-text{color:var(--pink)!important}.purple-text{color:var(--purple)!important}.red-text{color:var(--danger)!important}
+    .main-grid{display:grid;grid-template-columns:1.1fr 1.1fr .9fr .9fr;gap:14px;margin-bottom:14px}
+    .stat-card{padding:16px}.stat-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.stat-title h3{font-size:18px;letter-spacing:-.3px}
+    .total-chip{display:inline-block;margin-bottom:10px;padding:10px 12px;border-radius:14px;font-weight:900;font-size:24px;background:#fff;border:1px solid rgba(0,0,0,.04)}
+    .mini-rows{display:grid;gap:8px}.mini-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid rgba(0,0,0,.04);border-radius:14px;padding:11px 12px;font-size:14px}.mini-row b{font-size:16px}
+    .live-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}.live-card{padding:16px}.live-amount{font-size:30px;font-weight:900;margin-top:10px}.explain{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
+    .section-card{padding:16px;margin-bottom:14px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.section-head h3{font-size:18px;letter-spacing:-.3px}.section-head .right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.row > *{flex:1;min-width:0}
+    .input-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:10px}.input-grid.two{grid-template-columns:repeat(2,1fr)}.input-grid.five{grid-template-columns:repeat(5,1fr)}
+    .calendar-shell{margin-top:4px}.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}.week-name{text-align:center;font-weight:800;color:#7a6870;padding:6px 0}
+    .calendar-cell{min-height:106px;border:1px solid #f1e4ea;border-radius:16px;padding:8px;background:#fff;overflow:hidden}.calendar-date{font-weight:900;margin-bottom:4px;color:#5b4b52}
+    .calendar-item{font-size:12px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#6a5a62;cursor:pointer}.calendar-amount{font-weight:900;color:var(--blue)}
+    .calendar-item.red .calendar-amount{color:var(--danger)} .calendar-more{font-size:11px;color:#a28d97;margin-top:3px;cursor:pointer}.calendar-total{font-size:11px;font-weight:900;margin-top:6px;color:#7a4660}
+    .list-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.group-box{padding:14px;border-radius:18px;border:1px solid var(--line)}.group-box.blue{background:var(--blue-bg);border-color:#dbe8ff}.group-box.pink{background:var(--pink-bg);border-color:#f4dbe6}
+    .group-box h4{font-size:17px;margin-bottom:10px}.group-total{display:inline-block;margin-bottom:10px;padding:8px 12px;border-radius:12px;background:#fff;font-weight:900}
+    .line{padding:10px 0;border-bottom:1px solid #f0e6eb}.line:last-child{border-bottom:none}.line-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .sub{margin-top:6px;font-size:13px;color:var(--muted);line-height:1.5;word-break:keep-all;overflow-wrap:break-word}.money.red{color:var(--danger);font-weight:900}.fold-hidden{display:none}
+    .recipe-card{padding:16px;border:1px solid #f1e3e8;border-radius:18px;background:linear-gradient(180deg,#fffdfd 0%,#fff8fa 100%);margin-bottom:12px}
+    .chip{display:inline-block;padding:4px 10px;border-radius:999px;background:#fff1f6;color:#c2577a;font-weight:800;font-size:12px}
+    .tab-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.tab-btn{border:none;cursor:pointer;padding:8px 13px;border-radius:999px;background:#f7f2f4;font-weight:700;color:#76636b}.tab-btn.active{background:linear-gradient(180deg,#ffe4ed 0%,#ffdbe8 100%);color:#7a4660}
+    @media (max-width:1200px){.summary-grid{grid-template-columns:repeat(3,1fr)}.main-grid{grid-template-columns:1fr 1fr}.list-grid-4{grid-template-columns:1fr 1fr}.input-grid{grid-template-columns:repeat(3,1fr)}}
+    @media (max-width:900px){body{padding:14px}.summary-grid,.main-grid,.live-grid,.list-grid-4,.input-grid,.input-grid.two,.input-grid.five,.top-controls{grid-template-columns:1fr !important}.calendar-grid{gap:4px}.calendar-cell{min-height:74px;padding:6px;border-radius:12px}.calendar-date{font-size:12px}.calendar-item{font-size:10px}.calendar-total,.calendar-more{font-size:10px}.summary-card .v,.live-amount,.total-chip{font-size:24px}}
+  </style>
 </head>
-
 <body>
+<div class="wrap">
+  <h1 class="title">🌷 채원나은이네 가계부</h1>
+  <div class="card toolbar">
+    <button id="recordModeBtn" class="mode-btn active" onclick="setMode('record')">📝 가계부</button>
+    <button id="recipeModeBtn" class="mode-btn" onclick="setMode('recipe')">📚 레시피</button>
+  </div>
+  <div class="card top-controls">
+    <div class="field"><label>월 선택</label><input id="monthPicker" type="month"></div>
+    <div class="right row" style="justify-content:flex-end"><button class="btn primary" onclick="applySelectedMonth()">불러오기</button></div>
+  </div>
 
-<!-- 상단 요약 -->
-<div class="card">
-<h2>🌷 이번달 요약</h2>
-<div class="flex">
+  <div id="recordSection">
+    <div class="summary-grid">
+      <div class="summary-card blue"><div class="k">👨 병훈 수입</div><div class="v blue-text" id="bhIncomeView">₩ 0</div><div class="formula">직접 수정 가능</div></div>
+      <div class="summary-card pink"><div class="k">👩 수련 수입</div><div class="v pink-text" id="srIncomeView">₩ 0</div><div class="formula">직접 수정 가능</div></div>
+      <div class="summary-card"><div class="k">🌼 기타 수입</div><div class="v" id="otherIncomeView">₩ 0</div><div class="formula">직접 수정 가능</div></div>
+      <div class="summary-card blue"><div class="k">💸 병훈 남은 금액</div><div class="v blue-text" id="bhRemainView">₩ 0</div><div class="formula">수입 - 고정지출 - 지난달 카드값</div></div>
+      <div class="summary-card pink"><div class="k">💸 수련 남은 금액</div><div class="v pink-text" id="srRemainView">₩ 0</div><div class="formula">수입 - 고정지출 - 지난달 카드값</div></div>
+    </div>
 
-<div>👨 병훈 수입 <input id="bhIncome"></div>
-<div>👩 수련 수입 <input id="srIncome"></div>
+    <div class="main-grid">
+      <div class="card stat-card" style="background:var(--blue-bg);border-color:#dbe8ff">
+        <div class="stat-title"><h3>👨 병훈 고정지출</h3></div>
+        <div class="total-chip blue-text" id="bhFixedTotalView">₩ 0</div>
+        <div class="mini-rows">
+          <div class="mini-row"><span>병훈 카드</span><b class="blue-text" id="bhFixedCardView">₩ 0</b></div>
+          <div class="mini-row"><span>병훈 현금</span><b class="blue-text" id="bhFixedCashView">₩ 0</b></div>
+        </div>
+      </div>
+      <div class="card stat-card" style="background:var(--pink-bg);border-color:#f4dbe6">
+        <div class="stat-title"><h3>👩 수련 고정지출</h3></div>
+        <div class="total-chip pink-text" id="srFixedTotalView">₩ 0</div>
+        <div class="mini-rows">
+          <div class="mini-row"><span>수련 카드</span><b class="pink-text" id="srFixedCardView">₩ 0</b></div>
+          <div class="mini-row"><span>수련 현금</span><b class="pink-text" id="srFixedCashView">₩ 0</b></div>
+        </div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-title"><h3>💳 지난달 카드값</h3><button class="btn small" onclick="scrollToMonthlyInputs()">수정</button></div>
+        <div class="mini-rows">
+          <div class="mini-row"><span>병훈</span><b id="bhLastCardView">₩ 0</b></div>
+          <div class="mini-row"><span>수련</span><b id="srLastCardView">₩ 0</b></div>
+        </div>
+      </div>
+      <div class="card stat-card" style="background:var(--purple-bg);border-color:#e6daf9">
+        <div class="stat-title"><h3>💜 고정지출 뺀 이번달 카드값</h3></div>
+        <div class="mini-rows">
+          <div class="mini-row"><span>병훈</span><b class="purple-text" id="bhExtraCardView">₩ 0</b></div>
+          <div class="mini-row"><span>수련</span><b class="purple-text" id="srExtraCardView">₩ 0</b></div>
+          <div class="mini-row"><span>합계</span><b class="purple-text" id="extraCardTotalView">₩ 0</b></div>
+        </div>
+        <div class="formula">지난달 카드값 - 고정지출 카드값</div>
+      </div>
+    </div>
 
-<div class="big blue">병훈 남은금액: <span id="bhRemain">0</span></div>
-<div class="big pink">수련 남은금액: <span id="srRemain">0</span></div>
+    <div id="monthlyInputCard" class="card section-card">
+      <div class="section-head"><h3>✏️ 월 입력값 수정</h3><div class="right"><button class="btn primary" onclick="saveMonthlyValues()">저장</button></div></div>
+      <div class="input-grid five">
+        <div class="field"><label>병훈 수입</label><input id="bhIncomeInput" inputmode="numeric" placeholder="병훈 수입"></div>
+        <div class="field"><label>수련 수입</label><input id="srIncomeInput" inputmode="numeric" placeholder="수련 수입"></div>
+        <div class="field"><label>기타 수입</label><input id="otherIncomeInput" inputmode="numeric" placeholder="기타 수입"></div>
+        <div class="field"><label>병훈 지난달 카드값</label><input id="bhLastCardInput" inputmode="numeric" placeholder="병훈 지난달 카드값"></div>
+        <div class="field"><label>수련 지난달 카드값</label><input id="srLastCardInput" inputmode="numeric" placeholder="수련 지난달 카드값"></div>
+      </div>
+      <div class="explain">남은 금액 계산식: 수입 - 고정지출 - 지난달 카드값</div>
+    </div>
 
+    <div class="live-grid">
+      <div class="card live-card" style="background:var(--blue-bg);border-color:#dbe8ff"><div class="card-subtitle">👨 병훈 실시간 지출</div><div class="live-amount blue-text" id="bhLiveExpenseView">₩ 0</div><div class="explain">실시간 지출합계에는 일반지출만 들어갑니다. 고정지출 / 지난달 카드값 제외</div></div>
+      <div class="card live-card" style="background:var(--pink-bg);border-color:#f4dbe6"><div class="card-subtitle">👩 수련 실시간 지출</div><div class="live-amount pink-text" id="srLiveExpenseView">₩ 0</div><div class="explain">실시간 지출합계에는 일반지출만 들어갑니다. 고정지출 / 지난달 카드값 제외</div></div>
+    </div>
+
+    <div class="card section-card">
+      <div class="section-head"><h3>✏️ 실시간 지출 입력</h3></div>
+      <div class="input-grid">
+        <div class="field"><label>날짜</label><input id="expenseDate" type="date"></div>
+        <div class="field"><label>금액</label><input id="expenseAmount" inputmode="numeric" placeholder="금액"></div>
+        <div class="field"><label>사람</label><select id="expenseOwner"><option value="병훈">병훈</option><option value="수련">수련</option></select></div>
+        <div class="field"><label>결제수단</label><select id="expensePayment"><option value="카드">카드</option><option value="현금">현금</option><option value="계좌이체">계좌이체</option></select></div>
+        <div class="field"><label>카드명</label><input id="expenseCardName" placeholder="카드 아니면 비워두기"></div>
+        <div class="field"><label>메모</label><input id="expenseMemo" placeholder="메모"></div>
+      </div>
+      <div style="margin-top:10px"><button class="btn primary" onclick="saveExpense()">실시간 지출 저장</button></div>
+    </div>
+
+    <div class="card section-card">
+      <div class="section-head"><h3>📅 실시간 지출 달력</h3></div>
+      <div id="liveCalendar" class="calendar-shell">불러오는 중...</div>
+    </div>
+
+    <div class="card section-card">
+      <div class="section-head"><h3>💸 실시간 지출 목록</h3><div class="right"><span class="card-subtitle">고정지출 제외 / 일반지출만 표시</span><button class="btn small" onclick="toggleSection('liveExpenseListWrap', this)">접기</button></div></div>
+      <div id="liveExpenseListWrap"><div id="liveExpenseList">불러오는 중...</div></div>
+    </div>
+
+    <div class="card section-card">
+      <div class="section-head"><h3>🧾 고정지출 관리</h3><div class="right"><button id="fixedSaveBtn" class="btn primary" onclick="saveOrUpdateFixedExpense()">고정지출 저장</button><button class="btn ghost" onclick="resetFixedForm()">입력 초기화</button><button class="btn ghost" onclick="importFixedExpenses()">선택한 달로 불러오기</button></div></div>
+      <input type="hidden" id="fixedId">
+      <div class="input-grid">
+        <div class="field"><label>이름</label><input id="fixedName" placeholder="예: 통신비"></div>
+        <div class="field"><label>금액</label><input id="fixedAmount" inputmode="numeric" placeholder="금액"></div>
+        <div class="field"><label>자동이체 날짜</label><input id="fixedDay" type="number" placeholder="매달 몇일"></div>
+        <div class="field"><label>사람</label><select id="fixedOwner"><option value="병훈">병훈</option><option value="수련">수련</option></select></div>
+        <div class="field"><label>결제수단</label><select id="fixedPayment"><option value="카드">카드</option><option value="현금">현금</option><option value="계좌이체">계좌이체</option></select></div>
+        <div class="field"><label>카드명</label><input id="fixedCardName" placeholder="예: KB카드"></div>
+      </div>
+      <div class="input-grid two" style="margin-top:10px">
+        <div class="field"><label>메모</label><input id="fixedMemo" placeholder="메모"></div>
+        <div class="field" style="display:flex;align-items:end"><label style="display:flex;align-items:center;gap:8px;margin:0"><input id="fixedActive" type="checkbox" checked style="width:auto">사용중</label></div>
+      </div>
+    </div>
+
+    <div class="card section-card">
+      <div class="section-head"><h3>📋 고정지출 목록</h3><div class="right"><button class="btn small" onclick="toggleSection('fixedListWrap', this)">접기</button></div></div>
+      <div id="fixedListWrap">
+        <div class="list-grid-4">
+          <div class="group-box blue"><h4>👨 병훈 카드</h4><div class="group-total blue-text" id="fixedGroupTotalBhCard">₩ 0</div><div id="fixedListBhCard">불러오는 중...</div></div>
+          <div class="group-box blue"><h4>👨 병훈 현금</h4><div class="group-total blue-text" id="fixedGroupTotalBhCash">₩ 0</div><div id="fixedListBhCash">불러오는 중...</div></div>
+          <div class="group-box pink"><h4>👩 수련 카드</h4><div class="group-total pink-text" id="fixedGroupTotalSrCard">₩ 0</div><div id="fixedListSrCard">불러오는 중...</div></div>
+          <div class="group-box pink"><h4>👩 수련 현금</h4><div class="group-total pink-text" id="fixedGroupTotalSrCash">₩ 0</div><div id="fixedListSrCash">불러오는 중...</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="recipeSection" class="hidden">
+    <div class="card section-card">
+      <div class="section-head"><h3>📚 레시피 작성</h3><div class="right"><button id="recipeSaveBtn" class="btn primary" onclick="saveRecipe()">등록하기</button></div></div>
+      <div class="tab-row" id="recipeTabs">
+        <button class="tab-btn active" onclick="setRecipeTab('전체', this)">전체</button><button class="tab-btn" onclick="setRecipeTab('국', this)">국</button><button class="tab-btn" onclick="setRecipeTab('반찬', this)">반찬</button><button class="tab-btn" onclick="setRecipeTab('메인요리', this)">메인요리</button><button class="tab-btn" onclick="setRecipeTab('볶음', this)">볶음</button><button class="tab-btn" onclick="setRecipeTab('찌개', this)">찌개</button><button class="tab-btn" onclick="setRecipeTab('면', this)">면</button><button class="tab-btn" onclick="setRecipeTab('기타', this)">기타</button>
+      </div>
+      <div class="input-grid two">
+        <div class="field"><label>제목</label><input id="recipeTitle" placeholder="레시피 제목"></div>
+        <div class="field"><label>카테고리</label><select id="recipeCategory"><option value="국">국</option><option value="반찬">반찬</option><option value="메인요리">메인요리</option><option value="볶음">볶음</option><option value="찌개">찌개</option><option value="면">면</option><option value="기타">기타</option><option value="아이반찬">아이반찬</option><option value="냉장고털이">냉장고털이</option></select></div>
+      </div>
+      <div class="field" style="margin-top:10px"><label>내용</label><textarea id="recipeMemo" rows="8" placeholder="재료 / 조리법 / 링크 / 메모"></textarea></div>
+    </div>
+    <div class="card section-card">
+      <div class="section-head"><h3>🍳 레시피 목록</h3><div class="right"><input id="recipeSearch" placeholder="🔎 레시피 검색" oninput="renderRecipes()" style="max-width:260px"><button class="btn small" onclick="toggleSection('recipeListWrap', this)">접기</button></div></div>
+      <div id="recipeListWrap"><div id="recipeList">불러오는 중...</div></div>
+    </div>
+  </div>
 </div>
-<div style="font-size:12px;opacity:.6">
-(수입 - 고정지출 - 지난달카드값)
-</div>
-</div>
 
-
-<!-- 고정지출 + 카드 -->
-<div class="flex">
-
-<div class="card">
-<h3>👨 병훈 고정지출</h3>
-총합 <span id="bhFixedTotal">0</span>
-</div>
-
-<div class="card">
-<h3>👩 수련 고정지출</h3>
-총합 <span id="srFixedTotal">0</span>
-</div>
-
-
-<div class="card">
-<h3 style="display:flex;justify-content:space-between;">
-💳 지난달 카드값
-<button onclick="scrollToCardInput()">수정</button>
-</h3>
-
-<div>👨 병훈 <span id="bhLastCard">0</span></div>
-<div>👩 수련 <span id="srLastCard">0</span></div>
-
-</div>
-
-
-<div class="card" style="background:linear-gradient(135deg,#f5edff,#ffeef5)">
-<h3>💜 고정지출 뺀 이번달 카드값</h3>
-<div>👨 병훈 <span id="bhExtraCard">0</span></div>
-<div>👩 수련 <span id="srExtraCard">0</span></div>
-</div>
-
-</div>
-
-
-<!-- 실시간 지출 -->
-<div class="card">
-<h3>💸 실시간 지출합계 (일반지출만)</h3>
-
-<div>👨 병훈 <span id="bhLiveTotal">0</span></div>
-<div>👩 수련 <span id="srLiveTotal">0</span></div>
-
-<hr>
-
-<input id="date" placeholder="날짜">
-<select id="person">
-<option value="bh">병훈</option>
-<option value="sr">수련</option>
-</select>
-
-<input id="amount" placeholder="금액">
-<button onclick="addExpense()">추가</button>
-
-<div id="expenseList"></div>
-
-</div>
-
-
-<!-- 카드값 입력 -->
-<div id="cardInputSection" class="card">
-<h3>✏️ 지난달 카드값 수정</h3>
-
-<input id="bhCardInput" placeholder="병훈 카드값">
-<input id="srCardInput" placeholder="수련 카드값">
-<button onclick="saveCardValue()">저장</button>
-
-</div>
-
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+const SUPABASE_URL="https://kxdafjemyjwurpjlxmaf.supabase.co";
+const SUPABASE_KEY="sb_publishable_Ht7JYGv9e2Q7CEjnlc5oHw_nsLVZ_wq";
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-let expenses=[];
+let currentMode="record", fixedExpenseCache={}, recipeData=[], currentRecipeTab="전체", calendarDayMap={};
+let dashboardCache={bhFixedCard:0,bhFixedCash:0,srFixedCard:0,srFixedCash:0,bhLive:0,srLive:0};
 
-function addExpense(){
+function formatMoney(v){return "₩ "+Number(v||0).toLocaleString()}
+function parseNum(v){if(typeof v==="number") return v; return Number(String(v||"").replace(/[^\d.-]/g,""))||0}
+function escapeHtml(value){return String(value||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
+function getCurrentMonthString(){const n=new Date();return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}`}
+function getTodayString(){return new Date().toISOString().split("T")[0]}
+function getSelectedMonthRange(){const monthValue=document.getElementById("monthPicker").value||getCurrentMonthString(); const [year,month]=monthValue.split("-").map(Number); const start=new Date(year,month-1,1), end=new Date(year,month,1); return {monthValue,year,month,startString:start.toISOString().split("T")[0],endString:end.toISOString().split("T")[0]}}
+function getMonthStorageKey(name){return `budget_v2_${getSelectedMonthRange().monthValue}_${name}`}
+function getMonthlyValues(){return {bhIncome:parseNum(localStorage.getItem(getMonthStorageKey("bhIncome"))),srIncome:parseNum(localStorage.getItem(getMonthStorageKey("srIncome"))),otherIncome:parseNum(localStorage.getItem(getMonthStorageKey("otherIncome"))),bhLastCard:parseNum(localStorage.getItem(getMonthStorageKey("bhLastCard"))),srLastCard:parseNum(localStorage.getItem(getMonthStorageKey("srLastCard")))}}
+function setDefaultInputs(){document.getElementById("monthPicker").value=getCurrentMonthString();document.getElementById("expenseDate").value=getTodayString()}
+function setMode(mode){currentMode=mode;document.getElementById("recordSection").classList.toggle("hidden",mode!=="record");document.getElementById("recipeSection").classList.toggle("hidden",mode!=="recipe");document.getElementById("recordModeBtn").classList.toggle("active",mode==="record");document.getElementById("recipeModeBtn").classList.toggle("active",mode==="recipe")}
+function toggleSection(id,btn){const el=document.getElementById(id);el.classList.toggle("fold-hidden");btn.innerText=el.classList.contains("fold-hidden")?"펼치기":"접기"}
+function scrollToMonthlyInputs(){const section=document.getElementById("monthlyInputCard");section.scrollIntoView({behavior:"smooth",block:"start"});setTimeout(()=>document.getElementById("bhLastCardInput").focus(),350)}
+function getDateStringFromMonthAndDay(year,month,day){const lastDay=new Date(year,month,0).getDate();const safe=Math.min(Number(day),lastDay);return `${year}-${String(month).padStart(2,"0")}-${String(safe).padStart(2,"0")}`}
+function normalizeOwner(value){const v=String(value||'').trim(); if(v==='훈'||v==='병훈') return '병훈'; if(v==='쭈'||v==='수련') return '수련'; if(v==='기타') return '기타'; return v}\nfunction ownerToPayerType(owner,payment){const o=normalizeOwner(owner); return o==='병훈'?(payment==='카드'?'병훈카드':'병훈현금'):(o==='수련'?(payment==='카드'?'수련카드':'수련현금'): '')}\nfunction payerTypeToOwner(payerType){const v=String(payerType||'').trim(); if(v.startsWith('병훈')||v.startsWith('훈')) return '병훈'; if(v.startsWith('수련')||v.startsWith('쭈')) return '수련'; return ''}
+function renderMonthlyValues(){const v=getMonthlyValues(); document.getElementById("bhIncomeInput").value=v.bhIncome||""; document.getElementById("srIncomeInput").value=v.srIncome||""; document.getElementById("otherIncomeInput").value=v.otherIncome||""; document.getElementById("bhLastCardInput").value=v.bhLastCard||""; document.getElementById("srLastCardInput").value=v.srLastCard||""; document.getElementById("bhIncomeView").innerText=formatMoney(v.bhIncome); document.getElementById("srIncomeView").innerText=formatMoney(v.srIncome); document.getElementById("otherIncomeView").innerText=formatMoney(v.otherIncome); document.getElementById("bhLastCardView").innerText=formatMoney(v.bhLastCard); document.getElementById("srLastCardView").innerText=formatMoney(v.srLastCard)}
+function saveMonthlyValues(){localStorage.setItem(getMonthStorageKey("bhIncome"),parseNum(document.getElementById("bhIncomeInput").value)); localStorage.setItem(getMonthStorageKey("srIncome"),parseNum(document.getElementById("srIncomeInput").value)); localStorage.setItem(getMonthStorageKey("otherIncome"),parseNum(document.getElementById("otherIncomeInput").value)); localStorage.setItem(getMonthStorageKey("bhLastCard"),parseNum(document.getElementById("bhLastCardInput").value)); localStorage.setItem(getMonthStorageKey("srLastCard"),parseNum(document.getElementById("srLastCardInput").value)); renderMonthlyValues(); recalcDashboard(); alert("월 입력값을 저장했어요.")}
+async function loadIncomeDefaults(){const {startString,endString}=getSelectedMonthRange(); const {data,error}=await supabaseClient.from('income').select('*').gte('date',startString).lt('date',endString); if(error) return; const sums={bh:0,sr:0,other:0}; (data||[]).forEach(item=>{const owner=normalizeOwner(item.person); const amt=parseNum(item.amount); if(owner==='병훈') sums.bh+=amt; else if(owner==='수련') sums.sr+=amt; else sums.other+=amt;}); if(localStorage.getItem(getMonthStorageKey('bhIncome'))===null && sums.bh) localStorage.setItem(getMonthStorageKey('bhIncome'), String(sums.bh)); if(localStorage.getItem(getMonthStorageKey('srIncome'))===null && sums.sr) localStorage.setItem(getMonthStorageKey('srIncome'), String(sums.sr)); if(localStorage.getItem(getMonthStorageKey('otherIncome'))===null && sums.other) localStorage.setItem(getMonthStorageKey('otherIncome'), String(sums.other)); renderMonthlyValues(); }
+function recalcDashboard(){const m=getMonthlyValues(); const bhFixedTotal=dashboardCache.bhFixedCard+dashboardCache.bhFixedCash, srFixedTotal=dashboardCache.srFixedCard+dashboardCache.srFixedCash; document.getElementById("bhFixedTotalView").innerText=formatMoney(bhFixedTotal); document.getElementById("bhFixedCardView").innerText=formatMoney(dashboardCache.bhFixedCard); document.getElementById("bhFixedCashView").innerText=formatMoney(dashboardCache.bhFixedCash); document.getElementById("srFixedTotalView").innerText=formatMoney(srFixedTotal); document.getElementById("srFixedCardView").innerText=formatMoney(dashboardCache.srFixedCard); document.getElementById("srFixedCashView").innerText=formatMoney(dashboardCache.srFixedCash); document.getElementById("bhLiveExpenseView").innerText=formatMoney(dashboardCache.bhLive); document.getElementById("srLiveExpenseView").innerText=formatMoney(dashboardCache.srLive); document.getElementById("bhRemainView").innerText=formatMoney(m.bhIncome-bhFixedTotal-m.bhLastCard); document.getElementById("srRemainView").innerText=formatMoney(m.srIncome-srFixedTotal-m.srLastCard); const bhExtra=Math.max(m.bhLastCard-dashboardCache.bhFixedCard,0), srExtra=Math.max(m.srLastCard-dashboardCache.srFixedCard,0); document.getElementById("bhExtraCardView").innerText=formatMoney(bhExtra); document.getElementById("srExtraCardView").innerText=formatMoney(srExtra); document.getElementById("extraCardTotalView").innerText=formatMoney(bhExtra+srExtra)}
+async function saveExpense(){const date=document.getElementById("expenseDate").value||getTodayString(); const amount=parseNum(document.getElementById("expenseAmount").value); const owner=document.getElementById("expenseOwner").value; const payment=document.getElementById("expensePayment").value; const memo=document.getElementById("expenseMemo").value.trim(); const cardName=document.getElementById("expenseCardName").value.trim(); if(!amount){alert("금액을 입력해주세요.");return} const payload={date,amount,payment_method:payment,card_name:payment==="카드"?cardName:"",person:owner,payer_type:ownerToPayerType(owner,payment),memo,fixed_expense_id:null}; const {error}=await supabaseClient.from("expenses").insert([payload]); if(error){alert("실시간 지출 저장 실패: "+error.message);return} document.getElementById("expenseAmount").value=""; document.getElementById("expenseMemo").value=""; document.getElementById("expenseCardName").value=""; await loadLiveExpenses(); await loadLiveCalendar()}
+async function loadLiveExpenses(){const {startString,endString}=getSelectedMonthRange(); const {data,error}=await supabaseClient.from("expenses").select("*").gte("date",startString).lt("date",endString).is("fixed_expense_id",null).order("date",{ascending:false}).order("id",{ascending:false}); if(error){document.getElementById("liveExpenseList").innerHTML="불러오기 실패"; dashboardCache.bhLive=0; dashboardCache.srLive=0; recalcDashboard(); return} let bh=0,sr=0,html=""; if(!data||!data.length){document.getElementById("liveExpenseList").innerHTML="실시간 지출 내역이 없습니다."; dashboardCache.bhLive=0; dashboardCache.srLive=0; recalcDashboard(); return} data.forEach(item=>{const amt=parseNum(item.amount); const owner=normalizeOwner(payerTypeToOwner(item.payer_type)||item.person||''); if(owner==='병훈') bh+=amt; if(owner==='수련') sr+=amt; const isHigh=amt>=30000; html+=`<div class="line"><div class="line-top"><strong>${escapeHtml(item.date||"-")} · ${owner==='병훈'?'👨 병훈':(owner==='수련'?'👩 수련':'기타')}</strong><div class="row" style="gap:6px;justify-content:flex-end"><strong class="money ${isHigh?"red":""}">${formatMoney(amt)}</strong><button class="small-btn danger" onclick="deleteExpense(${item.id})">삭제</button></div></div><div class="sub">${escapeHtml(item.payment_method||"-")}${(item.payment_method||"")==="카드"?" / "+escapeHtml(item.card_name||"기타카드"):""}${item.memo?" / "+escapeHtml(item.memo):""}${isHigh?" / 3만원 이상":""}</div></div>`}); document.getElementById("liveExpenseList").innerHTML=html; dashboardCache.bhLive=bh; dashboardCache.srLive=sr; recalcDashboard()}
+async function deleteExpense(id){const ok=confirm("이 실시간 지출을 삭제할까요?"); if(!ok) return; const {error}=await supabaseClient.from("expenses").delete().eq("id",id); if(error){alert("삭제 실패: "+error.message);return} await loadLiveExpenses(); await loadLiveCalendar()}
+function showCalendarDayDetail(dateString){const items=calendarDayMap[dateString]||[]; if(!items.length) return; const lines=items.map(item=>{const amt=parseNum(item.amount); const owner=normalizeOwner(payerTypeToOwner(item.payer_type)||item.person||''); const label=item.memo||((item.payment_method||"")==="카드"?(item.card_name||"기타카드"):(item.payment_method||"지출")); return `${owner==="병훈"?"👨":"👩"} ${label} - ${formatMoney(amt)}`}); const total=items.reduce((s,i)=>s+parseNum(i.amount),0); alert(`${dateString}
 
-const date=document.getElementById("date").value;
-const person=document.getElementById("person").value;
-const amount=parseInt(document.getElementById("amount").value||0);
+${lines.join("
+")}
 
-expenses.push({date,person,amount});
-
-renderExpenses();
-calc();
-}
-
-function renderExpenses(){
-
-let html="";
-
-expenses.forEach(e=>{
-html+=`<div>${e.date} ${e.person=="bh"?"👨":"👩"} 
-<span class="${e.amount>=30000?"red":""}">
-${e.amount}
-</span></div>`;
-});
-
-document.getElementById("expenseList").innerHTML=html;
-}
-
-function calc(){
-
-let bh=0,sr=0;
-
-expenses.forEach(e=>{
-if(e.person=="bh")bh+=e.amount;
-else sr+=e.amount;
-});
-
-document.getElementById("bhLiveTotal").innerText=bh;
-document.getElementById("srLiveTotal").innerText=sr;
-
-calcRemain();
-}
-
-function saveCardValue(){
-
-localStorage.bhCard=document.getElementById("bhCardInput").value||0;
-localStorage.srCard=document.getElementById("srCardInput").value||0;
-
-renderCard();
-calcRemain();
-}
-
-function renderCard(){
-
-document.getElementById("bhLastCard").innerText=localStorage.bhCard||0;
-document.getElementById("srLastCard").innerText=localStorage.srCard||0;
-
-document.getElementById("bhExtraCard").innerText=
-Math.max((localStorage.bhCard||0)-0,0);
-
-document.getElementById("srExtraCard").innerText=
-Math.max((localStorage.srCard||0)-0,0);
-}
-
-function calcRemain(){
-
-const bhIncome=parseInt(document.getElementById("bhIncome").value||0);
-const srIncome=parseInt(document.getElementById("srIncome").value||0);
-
-const bhCard=parseInt(localStorage.bhCard||0);
-const srCard=parseInt(localStorage.srCard||0);
-
-document.getElementById("bhRemain").innerText=
-bhIncome-bhCard;
-
-document.getElementById("srRemain").innerText=
-srIncome-srCard;
-}
-
-function scrollToCardInput(){
-document.getElementById("cardInputSection").scrollIntoView({behavior:"smooth"});
-}
-
-renderCard();
-
+합계: ${formatMoney(total)}`)}
+async function loadLiveCalendar(){const {year,month,startString,endString}=getSelectedMonthRange(); const {data,error}=await supabaseClient.from("expenses").select("*").gte("date",startString).lt("date",endString).is("fixed_expense_id",null).order("date",{ascending:true}).order("id",{ascending:true}); if(error){document.getElementById("liveCalendar").innerHTML="달력 불러오기 실패";return} const byDate={}; calendarDayMap={}; (data||[]).forEach(item=>{const d=item.date; if(!byDate[d]) byDate[d]=[]; byDate[d].push(item)}); calendarDayMap=byDate; const firstDate=new Date(year,month-1,1), firstDay=firstDate.getDay(), daysInMonth=new Date(year,month,0).getDate(), weekNames=["일","월","화","수","목","금","토"], isMobile=window.innerWidth<=900; let html=`<div class="calendar-grid" style="margin-bottom:8px">${weekNames.map(day=>`<div class="week-name">${day}</div>`).join("")}</div><div class="calendar-grid">`; for(let i=0;i<firstDay;i++) html+=`<div></div>`; for(let day=1;day<=daysInMonth;day++){const dateString=`${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`; let inner=`<div class="calendar-date">${day}</div>`; if(byDate[dateString]){const items=byDate[dateString], maxVisible=isMobile?2:3; let dayTotal=0; items.forEach((item,idx)=>{const amt=parseNum(item.amount); dayTotal+=amt; if(idx<maxVisible){const label=item.memo||((item.payment_method||"")==="카드"?(item.card_name||"기타카드"):(item.payment_method||"지출")); inner+=`<div class="calendar-item ${amt>=30000?"red":""}" onclick="showCalendarDayDetail('${dateString}')">${escapeHtml(label)} <span class="calendar-amount">${formatMoney(amt)}</span></div>`}}); if(items.length>maxVisible) inner+=`<div class="calendar-more" onclick="showCalendarDayDetail('${dateString}')">+${items.length-maxVisible}건</div>`; inner+=`<div class="calendar-total ${dayTotal>=30000?"red-text":""}">합계 ${formatMoney(dayTotal)}</div>`} html+=`<div class="calendar-cell">${inner}</div>`} html+=`</div>`; document.getElementById("liveCalendar").innerHTML=html}
+async function loadFixedExpenses(){const {data,error}=await supabaseClient.from("fixed_expenses").select("*").order("day",{ascending:true}).order("id",{ascending:true}); if(error){document.getElementById("fixedListBhCard").innerHTML="불러오기 실패";document.getElementById("fixedListBhCash").innerHTML="불러오기 실패";document.getElementById("fixedListSrCard").innerHTML="불러오기 실패";document.getElementById("fixedListSrCash").innerHTML="불러오기 실패";return} fixedExpenseCache={}; const groups={bhCard:{items:[],total:0},bhCash:{items:[],total:0},srCard:{items:[],total:0},srCash:{items:[],total:0}}; (data||[]).forEach(item=>{fixedExpenseCache[item.id]=item; const owner=item.person||payerTypeToOwner(item.payer_type), isCard=(item.payment_method||"")==="카드"; const key=owner==="병훈"?(isCard?"bhCard":"bhCash"):(owner==="수련"?(isCard?"srCard":"srCash"):""); if(!key) return; const amt=parseNum(item.amount); groups[key].total+=amt; groups[key].items.push(`<div class="line"><div class="line-top"><strong>${escapeHtml(item.name||"")}</strong><div class="row" style="gap:6px;justify-content:flex-end"><strong class="${amt>=30000?'red-text':''}">${formatMoney(amt)}</strong><button class="small-btn" onclick="editFixedExpense(${item.id})">수정</button><button class="small-btn danger" onclick="deleteFixedExpense(${item.id})">삭제</button></div></div><div class="sub">${item.day}일 / ${escapeHtml(item.payment_method||"-")}${item.payment_method==="카드"?" / "+escapeHtml(item.card_name||"기타카드"):""}${item.memo?" / "+escapeHtml(item.memo):""}${item.is_active?"":" / 사용안함"}</div></div>`)})
+ document.getElementById("fixedGroupTotalBhCard").innerText=formatMoney(groups.bhCard.total); document.getElementById("fixedGroupTotalBhCash").innerText=formatMoney(groups.bhCash.total); document.getElementById("fixedGroupTotalSrCard").innerText=formatMoney(groups.srCard.total); document.getElementById("fixedGroupTotalSrCash").innerText=formatMoney(groups.srCash.total); document.getElementById("fixedListBhCard").innerHTML=groups.bhCard.items.join("")||"내역 없음"; document.getElementById("fixedListBhCash").innerHTML=groups.bhCash.items.join("")||"내역 없음"; document.getElementById("fixedListSrCard").innerHTML=groups.srCard.items.join("")||"내역 없음"; document.getElementById("fixedListSrCash").innerHTML=groups.srCash.items.join("")||"내역 없음"; dashboardCache.bhFixedCard=groups.bhCard.total; dashboardCache.bhFixedCash=groups.bhCash.total; dashboardCache.srFixedCard=groups.srCard.total; dashboardCache.srFixedCash=groups.srCash.total; recalcDashboard()}
+function resetFixedForm(){document.getElementById("fixedId").value=""; document.getElementById("fixedName").value=""; document.getElementById("fixedAmount").value=""; document.getElementById("fixedDay").value=""; document.getElementById("fixedOwner").value="병훈"; document.getElementById("fixedPayment").value="카드"; document.getElementById("fixedCardName").value=""; document.getElementById("fixedMemo").value=""; document.getElementById("fixedActive").checked=true; document.getElementById("fixedSaveBtn").innerText="고정지출 저장"}
+function editFixedExpense(id){const item=fixedExpenseCache[id]; if(!item) return; document.getElementById("fixedId").value=item.id||""; document.getElementById("fixedName").value=item.name||""; document.getElementById("fixedAmount").value=item.amount||""; document.getElementById("fixedDay").value=item.day||""; document.getElementById('fixedOwner').value=normalizeOwner(item.person||payerTypeToOwner(item.payer_type)||'병훈'); document.getElementById("fixedPayment").value=item.payment_method||"카드"; document.getElementById("fixedCardName").value=item.card_name||""; document.getElementById("fixedMemo").value=item.memo||""; document.getElementById("fixedActive").checked=!!item.is_active; document.getElementById("fixedSaveBtn").innerText="고정지출 수정"; document.getElementById("fixedName").scrollIntoView({behavior:"smooth",block:"center"})}
+async function saveOrUpdateFixedExpense(){const id=document.getElementById("fixedId").value, name=document.getElementById("fixedName").value.trim(), amount=parseNum(document.getElementById("fixedAmount").value), day=parseNum(document.getElementById("fixedDay").value), owner=document.getElementById("fixedOwner").value, payment=document.getElementById("fixedPayment").value, cardName=document.getElementById("fixedCardName").value.trim(), memo=document.getElementById("fixedMemo").value.trim(), isActive=document.getElementById("fixedActive").checked; if(!name||!amount||!day){alert("이름, 금액, 날짜를 입력해주세요.");return} const payload={name,amount,day,payment_method:payment,card_name:payment==="카드"?cardName:"",person:owner,payer_type:ownerToPayerType(owner,payment),memo,is_active:isActive}; let savedId=null; if(id){const {error}=await supabaseClient.from("fixed_expenses").update(payload).eq("id",id); if(error){alert("고정지출 수정 실패: "+error.message);return} savedId=Number(id)} else {const {data,error}=await supabaseClient.from("fixed_expenses").insert([payload]).select("id").maybeSingle(); if(error){alert("고정지출 저장 실패: "+error.message);return} savedId=data?.id} if(savedId&&isActive) await syncFixedExpenseToSelectedMonth(savedId); resetFixedForm(); await loadFixedExpenses()}
+async function syncFixedExpenseToSelectedMonth(fixedExpenseId){const {year,month,startString,endString}=getSelectedMonthRange(); const {data:fixedItem,error:fixedError}=await supabaseClient.from("fixed_expenses").select("*").eq("id",fixedExpenseId).maybeSingle(); if(fixedError||!fixedItem) return; const expenseDate=getDateStringFromMonthAndDay(year,month,fixedItem.day); const {data:existingItem}=await supabaseClient.from("expenses").select("*").eq("fixed_expense_id",fixedExpenseId).gte("date",startString).lt("date",endString).maybeSingle(); const payload={date:expenseDate,amount:parseNum(fixedItem.amount),payment_method:fixedItem.payment_method||"현금",card_name:fixedItem.payment_method==="카드"?(fixedItem.card_name||""):"",person:fixedItem.person||"",payer_type:fixedItem.payer_type||ownerToPayerType(fixedItem.person||"병훈",fixedItem.payment_method||"현금"),memo:fixedItem.memo?`${fixedItem.name} / ${fixedItem.memo}`:fixedItem.name,fixed_expense_id:fixedItem.id}; if(existingItem){await supabaseClient.from("expenses").update(payload).eq("id",existingItem.id)} else {await supabaseClient.from("expenses").insert([payload])}}
+async function deleteFixedExpense(id){const ok=confirm("고정지출을 삭제할까요?
+선택한 달의 반영내역도 함께 지웁니다."); if(!ok) return; const {startString,endString}=getSelectedMonthRange(); const {error:expenseDeleteError}=await supabaseClient.from("expenses").delete().eq("fixed_expense_id",id).gte("date",startString).lt("date",endString); if(expenseDeleteError){alert("선택한 달 반영내역 삭제 실패: "+expenseDeleteError.message);return} const {error}=await supabaseClient.from("fixed_expenses").delete().eq("id",id); if(error){alert("고정지출 삭제 실패: "+error.message);return} await loadFixedExpenses(); await loadLiveExpenses(); await loadLiveCalendar()}
+async function importFixedExpenses(){const {year,month,startString,endString,monthValue}=getSelectedMonthRange(); const {data:fixedItems,error:fixedError}=await supabaseClient.from("fixed_expenses").select("*").eq("is_active",true); if(fixedError){alert("고정지출 불러오기 실패: "+fixedError.message);return} if(!fixedItems?.length){alert("불러올 고정지출이 없습니다.");return} const {data:existingItems,error:existingError}=await supabaseClient.from("expenses").select("id, fixed_expense_id").gte("date",startString).lt("date",endString).not("fixed_expense_id","is",null); if(existingError){alert("중복 확인 실패: "+existingError.message);return} const existingMap={}; (existingItems||[]).forEach(item=>existingMap[item.fixed_expense_id]=item.id); let insertRows=[], updateCount=0; for(const item of fixedItems){const payload={date:getDateStringFromMonthAndDay(year,month,item.day),amount:parseNum(item.amount),payment_method:item.payment_method||"현금",card_name:item.payment_method==="카드"?(item.card_name||""):"",person:item.person||"",payer_type:item.payer_type||ownerToPayerType(item.person||"병훈",item.payment_method||"현금"),memo:item.memo?`${item.name} / ${item.memo}`:item.name,fixed_expense_id:item.id}; if(existingMap[item.id]){const {error:updateError}=await supabaseClient.from("expenses").update(payload).eq("id",existingMap[item.id]); if(updateError){alert("고정지출 업데이트 실패: "+updateError.message);return} updateCount++} else insertRows.push(payload)} if(insertRows.length){const {error:insertError}=await supabaseClient.from("expenses").insert(insertRows); if(insertError){alert("고정지출 불러오기 실패: "+insertError.message);return}} alert(`${monthValue}에 신규 ${insertRows.length}건, 수정 ${updateCount}건 반영했어요.`); await loadLiveExpenses(); await loadLiveCalendar()}
+async function loadRecipes(){const {data,error}=await supabaseClient.from("recipes").select("*").order("id",{ascending:false}); if(error){document.getElementById("recipeList").innerHTML="불러오기 실패";return} recipeData=data||[]; renderRecipes()}
+function setRecipeTab(tab,el){currentRecipeTab=tab; document.querySelectorAll("#recipeTabs .tab-btn").forEach(btn=>btn.classList.remove("active")); if(el) el.classList.add("active"); renderRecipes()}
+function renderRecipes(){const wrap=document.getElementById("recipeList"); let filtered=[...recipeData]; const keyword=(document.getElementById("recipeSearch")?.value||"").toLowerCase().trim(); if(currentRecipeTab!=="전체") filtered=filtered.filter(item=>(item.category||"기타")===currentRecipeTab); if(keyword) filtered=filtered.filter(item=>(item.title||"").toLowerCase().includes(keyword)||(item.memo||"").toLowerCase().includes(keyword)); if(!filtered.length){wrap.innerHTML="레시피 없음";return} wrap.innerHTML=filtered.map(item=>`<div class="recipe-card"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><h3 style="font-size:18px;margin-bottom:8px">🍽 ${escapeHtml(item.title||"")}</h3><span class="chip">${escapeHtml(item.category||"기타")}</span></div><div class="row" style="gap:6px;justify-content:flex-end"><button class="small-btn" onclick="editRecipe(${item.id})">수정</button><button class="small-btn danger" onclick="deleteRecipe(${item.id})">삭제</button></div></div><div class="sub" style="margin-top:12px;white-space:pre-line">${(escapeHtml(item.memo||"")).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener noreferrer">▶ 영상보기</a>')}</div></div>`).join("")}
+async function saveRecipe(){const title=document.getElementById("recipeTitle").value.trim(), memo=document.getElementById("recipeMemo").value.trim(), category=document.getElementById("recipeCategory").value; if(!title){alert("제목을 입력해주세요.");return} let result; if(window.editingRecipeId){result=await supabaseClient.from("recipes").update({title,memo,category}).eq("id",window.editingRecipeId); window.editingRecipeId=null} else {result=await supabaseClient.from("recipes").insert([{title,memo,category}])} if(result.error){alert("저장 실패: "+result.error.message);return} document.getElementById("recipeTitle").value=""; document.getElementById("recipeMemo").value=""; document.getElementById("recipeCategory").value="국"; document.getElementById("recipeSaveBtn").innerText="등록하기"; await loadRecipes()}
+function editRecipe(id){const item=recipeData.find(r=>r.id===id); if(!item) return; document.getElementById("recipeTitle").value=item.title||""; document.getElementById("recipeMemo").value=item.memo||""; document.getElementById("recipeCategory").value=item.category||"기타"; window.editingRecipeId=id; document.getElementById("recipeSaveBtn").innerText="수정 저장"; window.scrollTo({top:0,behavior:"smooth"})}
+async function deleteRecipe(id){const ok=confirm("레시피를 삭제할까요?"); if(!ok) return; const {error}=await supabaseClient.from("recipes").delete().eq("id",id); if(error){alert("삭제 실패: "+error.message);return} await loadRecipes()}
+async function applySelectedMonth(){await loadIncomeDefaults(); renderMonthlyValues(); await loadFixedExpenses(); await loadLiveExpenses(); await loadLiveCalendar()}
+window.addEventListener("resize",()=>loadLiveCalendar());
+setDefaultInputs(); setMode('record'); (async()=>{await loadIncomeDefaults(); renderMonthlyValues(); await Promise.all([loadFixedExpenses(),loadLiveExpenses(),loadLiveCalendar(),loadRecipes()]);})();
 </script>
-
 </body>
 </html>
